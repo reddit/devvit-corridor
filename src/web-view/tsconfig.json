@@ -1,0 +1,15 @@
+// TypeScript config for all web view code.
+{
+  "extends": "../../tools/tsconfig-base.json",
+  "compilerOptions": {
+    "lib": ["DOM", "ES2020"],
+
+    "outDir": "../../dist/web-view",
+
+    "tsBuildInfoFile": "../../dist/web-view/tsconfig.tsbuildinfo"
+  },
+  // https://github.com/Microsoft/TypeScript/issues/25636
+  "include": ["**/*", "**/*.json", "../shared/2d.ts"],
+  "exclude": ["**/*.test.ts"],
+  "references": [{ "path": "../shared" }]
+}

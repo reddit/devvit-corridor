@@ -1,0 +1,39 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
+  "css": {
+    "formatter": {
+      "enabled": true,
+      "indentStyle": "space",
+      "quoteStyle": "single"
+    },
+    "linter": { "enabled": true }
+  },
+  "files": { "ignore": ["webroot/index.js"] },
+  "formatter": { "indentStyle": "space" },
+  "javascript": {
+    "formatter": {
+      "arrowParentheses": "asNeeded",
+      "bracketSpacing": false,
+      "indentStyle": "space",
+      "jsxQuoteStyle": "single",
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "none"
+    }
+  },
+  "json": {
+    "formatter": { "indentStyle": "space" },
+    "parser": { "allowComments": true }
+  },
+  "linter": {
+    "rules": {
+      "a11y": {
+        // devvit buttons do not have a type prop.
+        "useButtonType": "off"
+      },
+      "style": { "noInferrableTypes": "off", "noNonNullAssertion": "off" },
+      "suspicious": { "noImplicitAnyLet": "off" }
+    }
+  },
+  "vcs": { "enabled": true, "clientKind": "git" }
+}

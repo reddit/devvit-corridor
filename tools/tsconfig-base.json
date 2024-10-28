@@ -1,0 +1,51 @@
+// TypeScript configuration defaults for each sub-project (src, tools, etc).
+{
+  "$schema": "https://json.schemastore.org/tsconfig.json",
+
+  "compilerOptions": {
+    // enable incremental builds.
+    "composite": true,
+
+    // maximize type checking.
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "resolveJsonModule": true,
+    "strict": true,
+
+    // Blocks
+    "jsx": "react",
+    "jsxFactory": "Devvit.createElement",
+    "jsxFragmentFactory": "Devvit.Fragment",
+
+    "types": [], // projects add types needed.
+
+    "isolatedDeclarations": true, // require explicit types.
+
+    // improve compatibility with compilers that aren't type system aware.
+    "isolatedModules": true,
+
+    // allow JSON type-checking and imports.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    // assume library types are checked and compatible.
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+
+    "sourceMap": true,
+
+    "target": "ES2020",
+
+    // don't transform type-only imports.
+    "verbatimModuleSyntax": true
+  },
+  // https://github.com/microsoft/TypeScript/wiki/Performance#misconfigured-include-and-exclude
+  "exclude": ["dist", "node_modules", ".*/"]
+}
