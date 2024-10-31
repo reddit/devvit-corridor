@@ -1,5 +1,59 @@
 # 🌚 [snoosings](https://reddit.com/r/snoosings)
 
+
+there's a lot of stuff you can do with these mechanics! these graphics! there's so much I want to explore!
+
+
+
+- it occurred to me for the first time that I might use type-stripping for unit tests and skip a dependency. use type stripping for unit tests.
+
+```
+    "test:unit": "NODE_OPTIONS='--experimental-strip-types --no-warnings=ExperimentalWarning' node src/**/*.test.*",
+```
+
+```
+import assert from 'node:assert/strict'
+import {describe, test} from 'node:test'
+import {angleBetween, dotProduct, magnitude} from './2d.ts'
+
+describe('dotProduct()', () => {
+  test('v · v', () => {
+    assert.equal(
+      dotProduct(
+        {x: -0.6836781075757513, y: 0.7297836975581459},
+        {x: -0.6836781075757514, y: 0.7297836975581458}
+      ),
+      1
+    )
+  })
+})
+```
+
+sadly, requires .ts imports all the way up. esbuild handles this fine for prod code but TypeScript itself doesn't support it.
+
+```
+src/shared/tsconfig.json:4:3 - error TS5096: Option 'allowImportingTsExtensions' can only be used when either 'noEmit' or 'emitDeclarationOnly' is set.
+```
+
+
+createPattern doesn't support spritesheets. I guess I should have revisited with non-tiling sprites using the spritesheet.
+
+
+WH now exported. thought about constructor function but then you have two ways to make them and the native way is only a few characters more.
+
+got off to a real slow start on monday having trouble landing on an idea. I was originally thinking a flappy bird clone but partner told me I could do better.
+
+ended up doing esbuild server style. it was really nice to test without the playtest + shreddit load overhead. an improvement would have been to make a post-like shell but to test a few form factors but we're going to be adding fullscreen support soon and I don't know if web views will even run in post form factors in the future.
+
+copying and pasting let me up where I left off. works great as long as I never need to look back (which should be hte case unless an app becomes popular which is a good problem to have).
+
+
+
+I'm really surprised at how far I've been able to get with plain canvas and clipping. 10 000 mobs evenly distributed, full screen of tiles (without a pattern) and zero lag on my 2018 Android phone. it was a little laggy at 100k but playable as long as you didn't group many thousands on the viewport.
+
+
+
+
 snoosings is a networked drum machine with a twist: if the internet drops, the last sent melodies will loop, but otherwise you have to keep playing the tones you want friends to hear, and the farther away you are from snoos, the quieter they sound. it's the biggest singing-player game ever.
 
 [![demo](media/screenshot.png)](media/2024-10-26-snoosings.mov)

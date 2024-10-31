@@ -4,7 +4,6 @@
   "references": [
     { "path": "src" },
     { "path": "src/test" },
-    { "path": "src/web-view" },
-    { "path": "tools" }
+    { "path": "src/web-view" }
   ]
 }

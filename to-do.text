@@ -1,27 +1,2 @@
-experiment with large groups of instruments. do the sounds scale well?
-re-record snap, maybe pop, maybe wa.
-enable multi-touch so phone usage is easier.
-when the player and cursor touch, another click is required to resume travel.
-enable cursor key support.
-when on desktop, show keyboard shortcuts.
-when a magic bubble hits player or two players tag, swap instruments.
-when a magic spotlight hits player, perform solo.
-disconnect when backgrounded.
-extend the melody / phrase / measure message count so the last 10 messages are sent and keep track of time index so that new messages don't overwrite. drop phrases if we run out of time.
-add more roles.
-  conductor
-  mouth harp
-  harmonica
-  dancer
-  pyro 
-  light waver
-  ballet dancer 
-  boogieman
-  yodeler
-  bumbler
-add more diversity to level and collision detection with background
-add more venue levels, one per post. close the venue after some time.
-experiment with singing to animals to give more of a point to wandering.
-theme subreddit.
-experiment with replacing metronome with musicbox.
-experiment with WebGL instead of canvas; need snoovatar texture management.
+add save screenshot button; I think I can do this with Canvas.toBlob().
+experiment with WebGL instead of canvas.

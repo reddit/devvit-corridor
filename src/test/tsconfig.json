@@ -1,6 +1,6 @@
 // TypeScript config for test code under src/**/*.test.ts and src/test/**/*.
 {
-  "extends": "../../tools/tsconfig-base.json",
+  "extends": "../../tsconfig-base.json",
   "compilerOptions": {
     "lib": ["DOM", "ES2023"],
 

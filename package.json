@@ -1,34 +1,36 @@
 {
   "author": "Stephen Niedzielski <stephen@oidoid.com> (https://oidoid.com)",
-  "description": "the biggest singing-player game ever.",
+  "description": "",
   "dependencies": {
-    "@devvit/public-api": "0.11.1"
+    "@devvit/public-api": "0.11.2"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "devvit": "0.11.1",
     "esbuild": "0.24.0",
+    "mem-font": "11.0.0-2",
     "typescript": "5.7.0-beta",
-    "vitest": "2.1.3"
+    "vitest": "2.1.4"
   },
   "engines": {
     "node": ">=22.6"
   },
   "license": "BSD-3-Clause",
-  "name": "snoosings",
+  "name": "corridor",
   "scripts": {
-    "build:web": "esbuild --bundle --format=esm --log-level=warning --outfile=webroot/index.js src/web-view/index.ts",
+    "build:web": "esbuild --banner:js='new globalThis.EventSource(\"/esbuild\").addEventListener(\"change\", () => location.reload());' --bundle --format=esm --log-level=info --outfile=webroot/index.js src/web-view/index.ts",
     "clean": "rm -rf dist webroot/index.js",
+    "devvit:playtest": "devvit playtest --log-runtime corridorgame|grep --invert --line-buffered '\\[api\\]'",
     "format": "npm run formatter -- --fix",
     "formatter": "biome check --error-on-warnings",
-    "playtest": "devvit playtest --log-runtime snoosings|grep --invert --line-buffered '\\[api\\]'",
+    "playtest": "trap 'kill 0' exit; npm run build:web -- --watch=forever& npm run devvit:playtest& wait",
     "preversion": "[ -z \"$(git status -z)\" ]",
     "prepublishOnly": "! git symbolic-ref --quiet HEAD || git push --follow-tags origin \"$(git branch --show-current)\"",
-    "start": "trap 'kill 0' exit; npm run build:web -- --watch=forever& npm run playtest& wait",
+    "start": "npm run build:web -- --serve=1234 --servedir=webroot --watch=forever --serve",
     "test": "npm run test:format && npm run test:types && npm run test:unit",
     "test:format": "npm run formatter",
     "test:types": "tsc --build",
-    "test:unit": "vitest run",
+    "test:unit": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' vitest run",
     "version": "npm test"
   },
   "type": "module",

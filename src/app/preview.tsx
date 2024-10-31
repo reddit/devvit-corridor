@@ -1,8 +1,9 @@
 import {Devvit} from '@devvit/public-api'
 
+export const previewVersion: number = 0
+
 export function Preview(): JSX.Element {
-  // to-do: this should be a TV showing static using the five sing! keyboard
-  // colors. ideally, it'd be animated and zap in like a CRT.
+  // to-do: this should be a checkerboard or checkerboard-based animation.
   return (
     <vstack width={'100%'} height={'100%'} alignment='center middle'>
       <image

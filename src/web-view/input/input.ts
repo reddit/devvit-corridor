@@ -1,9 +1,14 @@
-import type {XY} from '../../shared/2d.js'
-import type {Cam} from '../cam.js'
+import type {XY} from '../../shared/types/2d.js'
+import type {Cam} from '../types/cam.js'
 import {KeyPoller} from './key-poller.js'
+import {PadPoller} from './pad-poller.js'
 import {PointerPoller} from './pointer-poller.js'
 
-export type Button = 'Click' | 'S' | 'I' | 'N' | 'G' | '!'
+// biome-ignore format:
+export type DefaultButton =
+  'L' | 'R' | 'U' | 'D' | // dpad.
+  'A' | 'B' | 'C' | // primary, secondary, tertiary.
+  'S' // start.
 
 export class Input<T extends string> {
   /** user hint as to whether to consider pointer input or not. */
@@ -16,6 +21,7 @@ export class Input<T extends string> {
 
   /** the time in milliseconds since the input changed. */
   #duration: number = 0
+  readonly #gamepad: PadPoller = new PadPoller()
   readonly #keyboard: KeyPoller = new KeyPoller()
   readonly #pointer: PointerPoller
   /** prior button samples. index 0 is current loop. */
@@ -26,7 +32,6 @@ export class Input<T extends string> {
     this.#pointer = new PointerPoller(cam, canvas)
   }
 
-  // to-do: this isn't very synced with point() which is cleared on reset.
   get clientPoint(): Readonly<XY> {
     return this.#pointer.clientXY
   }
@@ -54,14 +59,54 @@ export class Input<T extends string> {
     return this.isOn(...buttons) && this.isAnyStart(...buttons)
   }
 
+  /** true if any button is on. */
+  isAnyOn(...buttons: readonly T[]): boolean {
+    return (this.#bits & this.#buttonsToBits(buttons)) !== 0
+  }
+
   /** true if any button triggered on or off. */
   isAnyStart(...buttons: readonly T[]): boolean {
     const bits = this.#buttonsToBits(buttons)
     return (this.#bits & bits) !== (this.#prevBits[1] & bits)
   }
 
+  mapAxis(less: T, more: T, ...axes: readonly number[]): void {
+    for (const axis of axes) {
+      this.#gamepad.mapAxis(axis, this.#map(less), this.#map(more))
+    }
+  }
+
+  mapButton(button: T, ...indices: readonly number[]): void {
+    for (const index of indices) {
+      this.#gamepad.mapButton(index, this.#map(button))
+    }
+  }
+
   mapClick(button: T, ...clicks: readonly number[]): void {
     for (const click of clicks) this.#pointer.map(click, this.#map(button))
+  }
+
+  mapDefault(): void {
+    this.mapKey(<T>'L', 'ArrowLeft', 'a', 'A')
+    this.mapKey(<T>'R', 'ArrowRight', 'd', 'D')
+    this.mapKey(<T>'U', 'ArrowUp', 'w', 'W')
+    this.mapKey(<T>'D', 'ArrowDown', 's', 'S')
+    this.mapKey(<T>'A', 'c', 'C', ' ')
+    this.mapKey(<T>'B', 'x', 'X')
+    this.mapKey(<T>'C', 'z', 'Z')
+    this.mapKey(<T>'S', 'Enter', 'Escape')
+
+    // https://w3c.github.io/gamepad/#remapping
+    this.mapAxis(<T>'L', <T>'R', 0, 2)
+    this.mapAxis(<T>'U', <T>'D', 1, 3)
+    this.mapButton(<T>'L', 14)
+    this.mapButton(<T>'R', 15)
+    this.mapButton(<T>'U', 12)
+    this.mapButton(<T>'D', 13)
+    this.mapButton(<T>'A', 0)
+    this.mapButton(<T>'S', 9)
+
+    this.mapClick(<T>'A', 1)
   }
 
   /** @arg keys union of case-sensitive KeyboardEvent.key. */
@@ -69,8 +114,13 @@ export class Input<T extends string> {
     for (const key of keys) this.#keyboard.map(key, this.#map(button))
   }
 
-  get point(): Readonly<XY> | undefined {
+  get point(): Readonly<XY> {
     return this.#pointer.xy
+  }
+
+  // to-do: make this name fit better. seems like on start as well.
+  get pointOn(): boolean {
+    return this.#pointer.on
   }
 
   get pointType(): 'mouse' | 'touch' | 'pen' | undefined {
@@ -84,6 +134,8 @@ export class Input<T extends string> {
     this.#prevBits[1] = this.#prevBits[0]
     this.#prevBits[0] = this.#bits
 
+    this.#gamepad.poll()
+    this.#pointer.poll()
     if (this.#bits === 0 || this.#bits !== this.#prevBits[1]) {
       // expired or some button has changed but at least one button is pressed.
       this.#duration = 0
@@ -97,12 +149,13 @@ export class Input<T extends string> {
 
   reset(): void {
     this.handled = false
+    this.#gamepad.reset()
     this.#keyboard.reset()
     this.#pointer.reset()
   }
 
   get #bits(): number {
-    return this.#keyboard.bits | this.#pointer.bits
+    return this.#gamepad.bits | this.#keyboard.bits | this.#pointer.bits
   }
 
   #buttonsToBits(buttons: readonly T[]): number {

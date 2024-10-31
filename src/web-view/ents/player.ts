@@ -1,262 +1,261 @@
-import {type XY, magnitude, xyCloseTo, xyLerp, xySub} from '../../shared/2d.js'
-import {clamp} from '../../shared/math.js'
-import type {PeerMessage} from '../../shared/message.js'
 import {
-  type Instrument,
-  type Melody,
-  type PlayerSerial,
-  type Tone,
-  beatMillis,
-  silence
-} from '../../shared/serial.js'
-import {anonSnoovatarURL, anonUsername, noT2} from '../../shared/tid.js'
-import {type Assets, loadSnoovatar, snoovatarMaxWH} from '../assets.js'
-import type {Button, Input} from '../input/input.js'
-import {
-  MelodyBuffer,
-  melodyBufferFlip,
-  melodyBufferPut,
-  melodyMetronomeBuffer
-} from '../types/melody-buffer.js'
+  type WH,
+  type XY,
+  xyAdd,
+  xyCloseTo,
+  xyMagnitude,
+  xySub,
+  xyTrunc
+} from '../../shared/types/2d.js'
+import {type PeerMessage, disconnectMillis} from '../../shared/types/message.js'
+import type {PlayerSerial} from '../../shared/types/serial.js'
+import {anonSnoovatarURL, anonUsername, noT2} from '../../shared/types/tid.js'
+import type {UUID} from '../../shared/types/uuid.js'
+import {lerp} from '../../shared/utils/math.js'
+import {gridAt} from '../grid.js'
+import type {GameState} from '../types/game-state.js'
+import type {Layer} from '../types/layer.js'
 import {type UTCMillis, utcMillisNow} from '../types/time.js'
-import {quarterSpace} from '../utils/layout.js'
-import {green} from '../utils/palette.js'
-import type {Panel} from './panel.js'
+import {
+  drawCircle,
+  drawCircleOutlineStuff,
+  drawOtherTriangle,
+  drawText
+} from '../utils/draw.js'
+import {
+  fontLineHeightPx,
+  peerLerpRatio,
+  playerDefaultHP,
+  playerFirePeriodMillis,
+  playerHurtboxSizePx,
+  playerMaxHP,
+  playerSpeedPxMillis,
+  tileSizePx
+} from '../utils/metrics.js'
+import {white, white50, white80} from '../utils/palette.js'
+import {Bullet} from './bullet.js'
+import type {Item} from './item.js'
 
-// should this be PlayerSerial no omit
-export type Player = Omit<PlayerSerial, 'melody'> & {
-  snoovatarImg: HTMLImageElement
+export type P1 = PlayerSerial & {
+  readonly type: 'P1'
+  fired: number
+  peered: {at: UTCMillis; dir: XY; xy: XY}
+  items: {[uuid: UUID]: Item}
+  readonly layer: Layer
 }
 
-export type P1 = Player & {
-  type: 'P1'
-  melody: MelodyBuffer
-  peered: {at: UTCMillis; melody: Melody; dir: XY; xy: XY}
+export type Peer = PlayerSerial & {
+  readonly type: 'Peer'
+  readonly layer: Layer
+  peered: {at: UTCMillis; xy: XY | undefined}
 }
 
-export type Peer = Player & {
-  type: 'Peer'
-  played: UTCMillis
-  melody: Melody
-  peered: {
-    at: UTCMillis
-    melodyAt: UTCMillis
-    melody: Melody
-    xy: XY | undefined
-  }
-}
+export type Player = P1 | Peer
 
-const pxPerSec: number = 35
-
-export function P1(assets: Readonly<Assets>, lvlWH: Readonly<XY>): P1 {
+export function P1(lvlWH: Readonly<WH>): P1 {
   return {
-    type: 'P1',
+    client: '',
     dir: {x: 0, y: 0},
-    flipX: false,
-    peered: {
-      at: 0 as UTCMillis,
-      dir: {x: 0, y: 0},
-      melody: silence,
-      xy: {x: 0, y: 0}
-    },
-    instrument: randomInstrument(),
-    melody: MelodyBuffer(),
+    hp: playerDefaultHP,
+    peered: {at: 0 as UTCMillis, dir: {x: 0, y: 0}, xy: {x: 0, y: 0}},
+    items: {},
+    fired: 0,
+    layer: 'P1',
     name: anonUsername,
-    root: (-3 + Math.trunc(Math.random() * 8)) as Tone,
+    score: 0,
     snoovatarURL: anonSnoovatarURL,
-    snoovatarImg: assets.images.anonSnoovatar,
     t2: noT2,
+    type: 'P1',
     uuid: crypto.randomUUID(),
-    xy: {
-      x: snoovatarMaxWH.x / 2 + Math.random() * (lvlWH.x - snoovatarMaxWH.x),
-      y: snoovatarMaxWH.y / 2 + Math.random() * (lvlWH.y - snoovatarMaxWH.y / 2)
-    }
+    // to-do: streaming? pass in rnd.
+    x: 100, //Math.random() * lvlWH.w,
+    y: 100, //Math.random() * lvlWH.h
+    // hack: this is also used for viewport test but p1 should always be center.
+    w: playerHurtboxSizePx,
+    h: playerHurtboxSizePx
   }
 }
 
-export async function Peer(
-  assets: Readonly<Assets>,
-  peer: Peer | undefined,
-  msg: PeerMessage,
-  time: UTCMillis
-): Promise<Peer> {
-  let snoovatarImg = peer?.snoovatarImg // try cache.
-  if (!snoovatarImg)
-    try {
-      snoovatarImg = await loadSnoovatar(assets, msg.player)
-    } catch {
-      snoovatarImg = assets.images.anonSnoovatar
-    }
-  const now = utcMillisNow()
+export function Peer(peer: Peer | undefined, msg: PeerMessage): Peer {
   return {
-    played: (time - (time % beatMillis)) as UTCMillis,
-    type: 'Peer',
+    client: msg.player.client,
     dir: msg.player.dir,
-    peered: {
-      at: now,
-      melody: msg.player.melody,
-      melodyAt: msg.player.melody === peer?.melody ? peer.peered.melodyAt : now,
-      xy: {x: msg.player.xy.x, y: msg.player.xy.y}
-    },
-    flipX: msg.player.flipX,
-    instrument: msg.player.instrument,
-    // don't interrupt any active phrase.
-    melody: peer?.melody ?? msg.player.melody,
+    hp: msg.player.hp,
+    layer: 'Default',
+    peered: {at: utcMillisNow(), xy: {x: msg.player.x, y: msg.player.y}},
     name: msg.player.name,
-    root: msg.player.root,
+    score: msg.player.score,
     snoovatarURL: msg.player.snoovatarURL,
-    snoovatarImg,
     t2: msg.player.t2,
+    type: 'Peer',
     uuid: msg.player.uuid,
-    xy: peer?.xy ?? msg.player.xy // use stale xy and lerp to it.
+    x: peer?.x ?? msg.player.x, // use stale xy and lerp to it.
+    y: peer?.y ?? msg.player.y,
+    w: playerHurtboxSizePx,
+    h: playerHurtboxSizePx
   }
 }
 
-export function updateP1(
-  p1: P1,
-  ctrl: Input<Button>,
-  lvlWH: Readonly<XY>,
-  tick: number,
-  panel: Readonly<Panel>,
-  time: UTCMillis
-): void {
-  const point =
-    !ctrl.handled &&
-    ctrl.point &&
-    ctrl.isOn('Click') &&
-    (ctrl.isOnStart('Click') || p1.dir.x || p1.dir.y)
-  p1.dir = point ? xySub(ctrl.point, p1.xy) : {x: 0, y: 0}
-  if (point) ctrl.handled = true
-  const mag = magnitude(p1.dir) || 0
-  if (mag < 4) {
-    p1.dir.x = 0
-    p1.dir.y = 0
+export function p1Update(p1: P1, state: GameState): void {
+  const {cam, ctrl} = state
+  const point = !ctrl.handled && ctrl.isOn('A') // to-do: I think I need Click to be distinct
+  if (point) {
+    ctrl.handled = true
+    const pt = cam.toLevelXY(ctrl.clientPoint)
+    p1.dir = xySub(pt, p1)
+  } else if (ctrl.isAnyOn('L', 'R', 'U', 'D')) {
+    const x = ctrl.isOn('L', 'R')
+      ? 0
+      : ctrl.isOn('L')
+        ? -1
+        : ctrl.isOn('R')
+          ? 1
+          : 0
+    const y = ctrl.isOn('U', 'D')
+      ? 0
+      : ctrl.isOn('U')
+        ? -1
+        : ctrl.isOn('D')
+          ? 1
+          : 0
+    p1.dir = {x, y}
+  } else p1.dir = {x: 0, y: 0}
+  const mag = xyMagnitude(p1.dir) || 0
+  if (mag < 1) {
+    p1.dir.x = p1.dir.y = 0 // stop. destination reached.
+    p1.x = Math.round(p1.x) // snap to pixel for clear text rendering.
+    p1.y = Math.round(p1.y)
   } else {
     p1.dir.x /= mag
     p1.dir.y /= mag
   }
-  melodyBufferFlip(p1.melody, time)
-  if (panel.tone != null) melodyBufferPut(p1.melody, panel.tone, time)
-  updatePlayer(p1, lvlWH, tick)
+  if (state.time - p1.fired > playerFirePeriodMillis) {
+    for (let i = 0; i < 4; i++) {
+      const bulletDir = {x: 1 - 2 * (i & 1), y: 1 - 2 * (i >> 1)}
+      state.zoo.replace(state.cam, Bullet(bulletDir, state.time, p1))
+    }
+    p1.fired = state.time
+  }
+  for (const item of Object.values(p1.items)) {
+    if (state.time - item.picked > item.duration) delete p1.items[item.uuid]
+    switch (item.subtype) {
+      case 'Invincible':
+        break
+      default:
+        item.subtype satisfies never
+        break
+    }
+  }
+  playerUpdate(p1, state)
 }
 
-export function updatePeer(
-  peer: Peer,
-  lvlWH: Readonly<XY>,
-  tick: number,
-  isNewMelodyStart: boolean
-): void {
-  if (isNewMelodyStart) peer.melody = peer.peered.melody
+export function p1IsInvincible(p1: Readonly<P1>): Item | undefined {
+  return Object.values(p1.items)
+    .filter(item => item.subtype === 'Invincible')
+    .sort((lhs, rhs) => rhs.picked - lhs.picked)[0]
+}
+
+export function peerUpdate(peer: Peer, state: GameState): void {
+  if (state.time - peer.peered.at > disconnectMillis) {
+    state.zoo.remove(peer)
+    return
+  }
+
   if (peer.peered.xy) {
     // this needs to take time into account. the move player function actually does the trajectory stuff.
-    peer.xy = xyLerp(peer.xy, peer.peered.xy, 0.1)
+    peer.x = lerp(peer.x, peer.peered.xy.x, peerLerpRatio)
+    peer.y = lerp(peer.y, peer.peered.xy.y, peerLerpRatio)
 
-    if (xyCloseTo(peer.xy, peer.peered.xy, 1)) {
-      peer.xy = peer.peered.xy
+    if (xyCloseTo(peer, peer.peered.xy, 1)) {
+      peer.x = peer.peered.xy.x
+      peer.y = peer.peered.xy.y
       peer.peered.xy = undefined
     }
-  } else updatePlayer(peer, lvlWH, tick)
+  } else playerUpdate(peer, state)
 }
 
-export function renderPlayer(
-  ctx: CanvasRenderingContext2D,
-  player: Readonly<Player & {melody: Melody | MelodyBuffer}>,
-  assets: Readonly<Assets>,
-  time: UTCMillis
+export function p1Draw(p1: Readonly<P1>, state: Readonly<GameState>): void {
+  playerDraw(p1, state, p1IsInvincible(p1))
+}
+
+export function peerDraw(
+  peer: Readonly<Peer>,
+  state: Readonly<GameState>
 ): void {
-  if (player.snoovatarImg.naturalWidth && player.snoovatarImg.naturalHeight) {
-    const scale = snoovatarMaxWH.y / player.snoovatarImg.naturalHeight
-    const scaledWH = {
-      w: player.snoovatarImg.naturalWidth * scale,
-      h: player.snoovatarImg.naturalHeight * scale
-    }
-    const flip = player.flipX ? -1 : 1
-    ctx.save()
-    ctx.scale(flip, 1)
-    ctx.drawImage(
-      player.snoovatarImg,
-      (player.xy.x - scaledWH.w / 2) * flip,
-      player.xy.y - scaledWH.h,
-      scaledWH.w * flip,
-      scaledWH.h
-    )
-    ctx.restore()
-  } else {
-    const radius = 8
-    ctx.beginPath()
-    ctx.arc(player.xy.x, player.xy.y - radius * 2, radius, 0, 2 * Math.PI)
-    ctx.fillStyle = 'green'
-    ctx.fill()
-  }
-
-  const melody =
-    typeof player.melody === 'string'
-      ? player.melody
-      : melodyMetronomeBuffer(player.melody, time)
-  if (melody !== silence) {
-    const tone = {
-      Bubbler: assets.images.tonePop,
-      Clapper: assets.images.toneSnap,
-      Jazzman: assets.images.toneBa,
-      Rgggggg: assets.images.toneRg,
-      Wailer: assets.images.toneWa
-    }[player.instrument]
-    ctx.save()
-    const maxAngle = (10 * Math.PI) / 180
-    const angle = maxAngle * Math.sin(time * 0.003)
-    ctx.translate(player.xy.x, player.xy.y)
-    ctx.rotate(angle)
-    ctx.drawImage(
-      tone,
-      -tone.naturalWidth / 8,
-      -snoovatarMaxWH.y - tone.naturalHeight / 4 - quarterSpace,
-      tone.naturalWidth / 4,
-      tone.naturalHeight / 4
-    )
-    ctx.restore()
-  }
-
-  ctx.fillStyle = 'black'
-  ctx.font = '12px sans-serif'
-  const text = player.name
-  const dims = ctx.measureText(text)
-  const textX = player.xy.x - dims.width / 2
-
-  const top = player.xy.y + ctx.lineWidth + dims.actualBoundingBoxAscent
-  const textY = top
-  ctx.strokeStyle = green // just make sure there's contrast if drawing over someone
-  ctx.lineWidth = 4
-  ctx.strokeText(text, textX, textY)
-  ctx.fillText(text, textX, textY)
+  playerDraw(peer, state, undefined) // to-do: peer can be invincible?
 }
 
-function updatePlayer(player: Player, lvlWH: Readonly<XY>, tick: number): void {
-  const secs = tick / 1_000
+// to-do: make camera fixed?
+function playerDraw(
+  player: Readonly<Player>,
+  state: Readonly<GameState>,
+  invincible: Item | undefined
+): void {
+  const {c2d} = state.draw
+  const radius = 8
+
+  drawCircleOutlineStuff(c2d, player, radius, invincible ? white : white50)
+
+  for (let i = 0; i < 3; i++) {
+    const opacity = Math.max(0.5, Math.min(1, player.hp / playerMaxHP))
+    drawCircle(
+      c2d,
+      {
+        x:
+          player.x +
+          4 * Math.sin((i + 1) * state.time * 0.002 * (invincible ? 2 : 1)),
+        y:
+          player.y +
+          4 * Math.cos((i + 1) * state.time * 0.001 * (invincible ? 2 : 1))
+      },
+      radius,
+      `rgba(255, 255, 255, ${opacity})`
+    )
+  }
+  // drawCircle(ctx, player.xy, 4, '#f008')
+  if (invincible) {
+    const opacity = Math.min(
+      1,
+      1.5 - Math.min(1, (state.time - invincible.picked) / invincible.duration)
+    )
+    c2d.save()
+    c2d.translate(player.x, player.y)
+    const angle = -((state.time % 2_000) / 2_000) * Math.PI * 2
+    c2d.rotate(angle)
+    c2d.translate(-player.x, -player.y)
+    drawOtherTriangle(c2d, player, `rgba(255, 255, 255, ${opacity})`)
+    c2d.restore()
+  }
+
+  // to-do: there needs to be a grace period for invincible to vincible.
+
+  // hide labels when paused because the play button is hard to see.
+  drawText(
+    c2d,
+    player.name,
+    {x: player.x, y: player.y + fontLineHeightPx},
+    'TopCenter',
+    white80
+  )
+}
+
+function playerUpdate(player: Player, state: GameState): void {
+  const offset = {x: player.w, y: player.h}
   const {dir} = player
+  const invincible = player.type === 'P1' && p1IsInvincible(player)
+  // to-do: account for overshoot
   if (dir.x) {
-    player.xy.x = clamp(
-      player.xy.x + secs * pxPerSec * dir.x,
-      snoovatarMaxWH.x / 2,
-      lvlWH.x - snoovatarMaxWH.x / 2
-    )
-    player.flipX = dir.x < 0
+    const {x} = player
+    player.x =
+      player.x +
+      state.millis * playerSpeedPxMillis * dir.x * (invincible ? 1.25 : 1)
+    if (gridAt(xyTrunc(xyAdd(player, offset))) === '█') player.x = x
   }
-  if (dir.y)
-    player.xy.y = clamp(
-      player.xy.y + secs * pxPerSec * dir.y,
-      snoovatarMaxWH.y / 2,
-      lvlWH.y
-    )
-}
-
-function randomInstrument(): Instrument {
-  const set: {[instrument in Instrument]: null} = {
-    Bubbler: null,
-    Clapper: null,
-    Jazzman: null,
-    Rgggggg: null,
-    Wailer: null
+  if (dir.y) {
+    const {y} = player
+    player.y =
+      player.y +
+      state.millis * playerSpeedPxMillis * dir.y * (invincible ? 1.25 : 1)
+    if (gridAt(xyTrunc(xyAdd(player, offset))) === '█') player.y = y
   }
-  const arr = Object.keys(set) as Instrument[]
-  return arr[Math.trunc(Math.random() * arr.length)]!
 }

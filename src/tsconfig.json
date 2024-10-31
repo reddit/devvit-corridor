@@ -1,6 +1,6 @@
 // TypeScript config for all non-webview code.
 {
-  "extends": "../tools/tsconfig-base.json",
+  "extends": "../tsconfig-base.json",
   "compilerOptions": {
     "lib": ["ES2020", "WebWorker"],
 
@@ -9,7 +9,7 @@
     "tsBuildInfoFile": "../dist/tsconfig.tsbuildinfo"
   },
   // https://github.com/Microsoft/TypeScript/issues/25636
-  "include": ["app/**/*", "app/**/*.json", "main.tsx"],
+  "include": ["app/**/*", "app/**/*.json", "main.tsx", "../package.json"],
   "exclude": ["**/*.test.ts"],
   "references": [{ "path": "shared" }]
 }

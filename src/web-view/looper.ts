@@ -1,11 +1,8 @@
-import type {Assets} from './assets.js'
-import type {Cam} from './cam.js'
 import type {Input} from './input/input.js'
+import type {Assets} from './types/assets.js'
+import type {Cam} from './types/cam.js'
 
-export type Draw = {
-  data: {grassPattern: CanvasPattern}
-  ctx: CanvasRenderingContext2D
-}
+export type Draw = {checkerboard: CanvasPattern; c2d: C2D}
 
 /** manages window lifecycle for input and rendering. */
 export class Looper {
@@ -15,13 +12,13 @@ export class Looper {
   readonly assets: Readonly<Assets>
   readonly canvas: HTMLCanvasElement
   /** the exact duration in millis to apply on a given update step. */
-  tick: number = 0
+  millis: number = 0
   /** the relative timestamp in millis. */
   time?: number | undefined
 
   readonly #cam: Cam
   readonly #ctrl: Input<string>
-  #frame?: number | undefined
+  #frame?: number | undefined // to-do: expose this in GameState.
   #loop?: (() => void) | undefined
 
   constructor(
@@ -40,7 +37,7 @@ export class Looper {
   cancel(): void {
     if (this.#frame != null) cancelAnimationFrame(this.#frame)
     this.#frame = undefined
-    this.tick = 0
+    this.millis = 0
     this.time = undefined
     this.#ctrl.reset()
     this.#loop = undefined
@@ -68,13 +65,13 @@ export class Looper {
   }
 
   #newDraw(): Draw | undefined {
-    const ctx =
+    const c2d =
       this.canvas.getContext('2d', {alpha: false, willReadFrequently: false}) ??
       undefined
-    if (!ctx) return
-    const grassPattern = ctx.createPattern(this.assets.images.grass, 'repeat')
-    if (!grassPattern) return
-    return {ctx: ctx, data: {grassPattern}}
+    if (!c2d) return
+    const checkerboard = c2d.createPattern(this.assets.checkerboard, 'repeat')
+    if (!checkerboard) return
+    return {c2d, checkerboard}
   }
 
   #onEvent = (event: Event): void => {
@@ -87,7 +84,7 @@ export class Looper {
       // to-do: disconnect the socket when not in use.
       if (this.#frame != null) cancelAnimationFrame(this.#frame)
       this.#frame = undefined
-      this.tick = 0
+      this.millis = 0
       this.time = undefined
       this.#ctrl.reset()
     }
@@ -95,21 +92,41 @@ export class Looper {
 
   #onFrame = (time: number): void => {
     this.#frame = undefined
-    this.tick = time - (this.time ?? time)
+    this.millis = time - (this.time ?? time)
     this.time = time
-    this.age += this.tick
+    this.age += this.millis
     const loop = this.#loop
     this.#loop = undefined
+
+    this.#cam.resize()
+
     if (
-      this.canvas.width !== innerWidth ||
-      this.canvas.height !== innerHeight
+      this.canvas.width !== this.#cam.w ||
+      this.canvas.height !== this.#cam.h
     ) {
-      this.canvas.width = innerWidth
-      this.canvas.height = innerHeight
+      this.canvas.width = this.#cam.w
+      this.canvas.height = this.#cam.h
       this.canvas.focus() // hack: propagate key events.
     }
-    this.#cam.resize()
-    this.#ctrl.poll(this.tick)
+
+    // these pixels may be greater than, less than, or equal to cam. ratio
+    // may change independent of canvas size.
+    const clientW = (this.#cam.w * this.#cam.scale) / devicePixelRatio
+    const clientH = (this.#cam.h * this.#cam.scale) / devicePixelRatio
+    const dw = Number.parseFloat(this.canvas.style.width.slice(0, -2)) - clientW
+    const dh =
+      Number.parseFloat(this.canvas.style.height.slice(0, -2)) - clientH
+    if (
+      !Number.isFinite(dw) ||
+      Math.abs(dw) > 0.1 ||
+      !Number.isFinite(dh) ||
+      Math.abs(dh) > 0.1
+    ) {
+      this.canvas.style.width = `${clientW}px`
+      this.canvas.style.height = `${clientH}px`
+    }
+
+    this.#ctrl.poll(this.millis)
     loop?.()
   }
 }
