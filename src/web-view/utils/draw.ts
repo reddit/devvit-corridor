@@ -40,7 +40,13 @@ export function drawText(
   c2d: C2D,
   text: string,
   xy: Readonly<XY>,
-  justify: 'Center' | 'BottomRight' | 'TopLeft' | 'TopRight' | 'TopCenter', // to-do: rethink terminology.
+  justify:
+    | 'Center'
+    | 'BottomLeft'
+    | 'BottomRight'
+    | 'TopLeft'
+    | 'TopRight'
+    | 'TopCenter', // to-do: rethink terminology.
   stroke: string
 ): void {
   c2d.fillStyle = '#000'
@@ -51,6 +57,14 @@ export function drawText(
   let x = xy.x
   let y = xy.y
   switch (justify) {
+    case 'BottomLeft':
+      x += c2d.lineWidth
+      y -= c2d.lineWidth
+      break
+    case 'BottomRight':
+      x -= metrics.width + c2d.lineWidth
+      y -= c2d.lineWidth
+      break
     case 'Center':
       x -= Math.trunc(metrics.width / 2)
       y -= Math.trunc(
@@ -72,10 +86,6 @@ export function drawText(
         metrics.actualBoundingBoxAscent +
         metrics.actualBoundingBoxDescent +
         c2d.lineWidth
-      break
-    case 'BottomRight':
-      x -= metrics.width + c2d.lineWidth
-      y -= c2d.lineWidth
       break
     case 'TopRight':
       x -= metrics.width + c2d.lineWidth

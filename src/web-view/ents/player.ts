@@ -29,8 +29,7 @@ import {
   playerFirePeriodMillis,
   playerHurtboxSizePx,
   playerMaxHP,
-  playerSpeedPxMillis,
-  tileSizePx
+  playerSpeedPxMillis
 } from '../utils/metrics.js'
 import {white, white50, white80} from '../utils/palette.js'
 import {Bullet} from './bullet.js'
@@ -228,15 +227,6 @@ function playerDraw(
   }
 
   // to-do: there needs to be a grace period for invincible to vincible.
-
-  // hide labels when paused because the play button is hard to see.
-  drawText(
-    c2d,
-    player.name,
-    {x: player.x, y: player.y + fontLineHeightPx},
-    'TopCenter',
-    white80
-  )
 }
 
 function playerUpdate(player: Player, state: GameState): void {

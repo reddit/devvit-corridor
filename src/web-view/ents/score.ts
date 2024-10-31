@@ -23,6 +23,14 @@ export function scoreDraw(
 ): void {
   drawText(
     state.draw.c2d,
+    state.p1.name,
+    {x: 0, y: state.cam.h},
+    'BottomLeft',
+    white80
+  )
+
+  drawText(
+    state.draw.c2d,
     `${state.p1.score}`,
     {x: state.cam.w, y: state.cam.h},
     'BottomRight',

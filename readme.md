@@ -1,5 +1,7 @@
 # 🌚 [snoosings](https://reddit.com/r/snoosings)
 
+i run both `npm start` and `npm run playtest` in parallel so I get instant feedback on local only issues and more integrationy issues come.
+
 
 there's a lot of stuff you can do with these mechanics! these graphics! there's so much I want to explore!
 
