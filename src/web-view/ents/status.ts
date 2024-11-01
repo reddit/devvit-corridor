@@ -21,7 +21,8 @@ export function statusDraw(
   _status: Readonly<Status>,
   state: Readonly<GameState>
 ): void {
-  if (state.connected) return
+  if (state.connected || state.completed || state.author.t2 !== state.p1.t2)
+    return
   drawText(
     state.draw.c2d,
     'offline',
