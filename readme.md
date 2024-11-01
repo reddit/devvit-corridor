@@ -1,6 +1,8 @@
 # 🌚 [snoosings](https://reddit.com/r/snoosings)
 
 
+there were a few times this week I just lost focus, lost track of where I was and what I was doing, and it cost me hours. it's been a hard week.
+
 want to explore more in this art style too. it has a great mixture of textured, toothy pixels and larger blobs. maybe with a select few colors mixed in. I'm usually not a  fan of pastiche but I think this pixelated style really appeals to me and doesn't get bogged down in precision.
 
 started by verbatim copying snoosings.

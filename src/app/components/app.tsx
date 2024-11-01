@@ -129,8 +129,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
       default:
         msg.peer satisfies true
+        if (chan.status !== ChannelStatus.Connected) break
         if (debug) console.log(`${username} app.send`)
         chan.send(msg)
+        break
     }
   }
 

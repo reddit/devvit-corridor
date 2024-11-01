@@ -93,8 +93,9 @@ export class Game {
     // to-do: this isn't right because I can cruise around town for a long time
     // with A down.
     if (
-      this.#state.ctrl.isOffStart('A') &&
-      this.#state.audio.ctx.state !== 'running'
+      this.#state.ctrl.isAnyOn('A', 'B', 'C', 'D', 'L', 'R', 'S', 'U') &&
+      this.#state.audio.ctx.state !== 'running' &&
+      !(this.#looper.frame % 60)
     )
       void this.#state.audio.ctx.resume() // don't await; this can hang.
 

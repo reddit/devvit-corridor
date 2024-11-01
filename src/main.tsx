@@ -17,7 +17,7 @@ Devvit.addMenuItem({
 
 Devvit.addTrigger({
   event: 'AppUpgrade',
-  onEvent(_ev) {
+  onEvent(_ev, ctx) {
     if (upgrade) {
       console.log(`upgrading app to schema v${redisSchemaVersion}`)
       // to-do: schedule n updates.
