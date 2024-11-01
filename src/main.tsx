@@ -1,7 +1,7 @@
 import {Devvit} from '@devvit/public-api'
-import {App} from './app/app.js'
-import {Preview} from './app/preview.js'
-import {redisSchemaVersion, redisZaddPost} from './app/redis.js'
+import {App} from './app/components/app.js'
+import {submitNewPost} from './app/utils/post.js'
+import {redisSchemaVersion} from './app/utils/redis.js'
 
 const upgrade: boolean = true
 
@@ -12,19 +12,7 @@ Devvit.addCustomPostType({name: 'Corridor', height: 'tall', render: App})
 Devvit.addMenuItem({
   label: 'New Corridor Game',
   location: 'subreddit',
-  onPress: async (_ev, ctx) => {
-    if (!ctx.subredditName) return
-
-    const post = await ctx.reddit.submitPost({
-      preview: <Preview />,
-      title: 'corridor',
-      subredditName: ctx.subredditName
-    })
-    await redisZaddPost(ctx.redis, post)
-
-    ctx.ui.showToast({appearance: 'success', text: 'Corridor created.'})
-    ctx.ui.navigateTo(post)
-  }
+  onPress: async (_ev, ctx) => submitNewPost(ctx)
 })
 
 Devvit.addTrigger({

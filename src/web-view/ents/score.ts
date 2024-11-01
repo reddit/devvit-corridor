@@ -23,7 +23,7 @@ export function scoreDraw(
 ): void {
   drawText(
     state.draw.c2d,
-    state.p1.name,
+    state.author.username,
     {x: 0, y: state.cam.h},
     'BottomLeft',
     white80
@@ -31,7 +31,7 @@ export function scoreDraw(
 
   drawText(
     state.draw.c2d,
-    `${state.p1.score}`,
+    `${state.author.score ?? state.p1.score}`,
     {x: state.cam.w, y: state.cam.h},
     'BottomRight',
     white80

@@ -1,6 +1,12 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit, type UseIntervalResult, useInterval} from '@devvit/public-api'
-import {type JSONObject, useChannel, useState} from '@devvit/public-api'
+import {Devvit} from '@devvit/public-api'
+import {
+  type JSONObject,
+  type UseIntervalResult,
+  useChannel,
+  useInterval,
+  useState
+} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime.js'
 import {
   type AppMessageQueue,
@@ -8,15 +14,22 @@ import {
   type PeerMessage,
   type WebViewMessage,
   peerSchemaVersion
-} from '../shared/types/message.js'
+} from '../../shared/types/message.js'
 import {
   T2,
+  T3,
   anonSnoovatarURL,
   anonUsername,
-  noT2,
-  noT3
-} from '../shared/types/tid.js'
-import type {UUID} from '../shared/types/uuid.js'
+  noT2
+} from '../../shared/types/tid.js'
+import {utcMillisNow} from '../../shared/types/time.js'
+import type {UUID} from '../../shared/types/uuid.js'
+import {submitNewPost} from '../utils/post.js'
+import {
+  type AppPostRecord,
+  redisGetPost,
+  redisUpdatePost
+} from '../utils/redis.js'
 
 export function App(ctx: Devvit.Context): JSX.Element {
   const debug = 'corridor' in ctx.debug
@@ -33,6 +46,13 @@ export function App(ctx: Devvit.Context): JSX.Element {
       ]
     }
   )
+  if (!ctx.postId) throw Error('no post ID')
+  const postID = T3(ctx.postId) // hack: type post well.
+  const [post, setPost] = useState<AppPostRecord | null>(async () => {
+    const post = await redisGetPost(ctx.redis, postID)
+    return post ?? null
+  })
+  if (!post) throw Error(`no record for ${postID}`)
 
   const [_company, client, _version] =
     ctx.debug.metadata['devvit-user-agent']?.values[0]?.split(';') ?? []
@@ -40,6 +60,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
     id: 0,
     q: [
       {
+        author: {score: post.score, t2: post.t2, username: post.username},
+        completed: post.completed != null,
         debug,
         id: 0,
         p1: {client: client ?? '', name: username, t2, snoovatarURL},
@@ -61,7 +83,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
   const chan = useChannel<PeerMessage>({
     // key to current post to prevent interfering with other concerts.
-    name: ctx.postId ?? noT3,
+    name: postID,
     onMessage: msg => {
       // hack: filter out messages sent by this instance.
       if (msg.player.uuid !== uuid) queueMsg({msg, type: 'Peer'})
@@ -74,7 +96,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   if (debugFakePeers && chan.status === ChannelStatus.Connected)
     fakePeerInterval.start()
 
-  function onMessage(webViewMsg: WebViewMessage): void {
+  async function onMessage(webViewMsg: WebViewMessage): Promise<void> {
     let msg: WebViewMessage | PeerMessage = webViewMsg
 
     // if (debug)
@@ -88,9 +110,26 @@ export function App(ctx: Devvit.Context): JSX.Element {
         setUUID(msg.uuid)
         break
 
+      case 'GameOver':
+        setPost(prev => {
+          if (!prev) throw Error('no post')
+          return {...prev, completed: utcMillisNow(), score: msg.score}
+        })
+        if (!post) throw Error('no post')
+        await redisUpdatePost(
+          ctx.redis,
+          // hack: setPost() is broken.
+          {...post, completed: utcMillisNow(), score: msg.score}
+        )
+        break
+
+      case 'NewGame':
+        await submitNewPost(ctx)
+        break
+
       default:
         msg.peer satisfies true
-        console.log(`${username} app.send`)
+        if (debug) console.log(`${username} app.send`)
         chan.send(msg)
     }
   }
@@ -98,7 +137,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   return (
     <webview
       grow
-      onMessage={onMessage as (msg: JSONObject) => void}
+      onMessage={onMessage as (msg: JSONObject) => Promise<void>}
       state={msgQueue}
       url='index.html'
     />
@@ -108,7 +147,6 @@ function useFakePeekInterval(
   queueMsg: (msg: Readonly<NoIDAppMessage>) => void
 ): UseIntervalResult {
   return useInterval(() => {
-    console.log('queue 1')
     queueMsg({
       type: 'Peer',
       msg: {

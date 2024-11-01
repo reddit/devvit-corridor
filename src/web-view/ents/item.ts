@@ -1,9 +1,9 @@
 import {type Box, type XY, boxHits} from '../../shared/types/2d.js'
+import type {UTCMillis} from '../../shared/types/time.js'
 import type {UUID} from '../../shared/types/uuid.js'
 import {isVisible} from '../grid.js'
 import type {GameState} from '../types/game-state.js'
 import type {Layer} from '../types/layer.js'
-import type {UTCMillis} from '../types/time.js'
 import {drawTriangle} from '../utils/draw.js'
 import {itemSizePx} from '../utils/metrics.js'
 import {white90} from '../utils/palette.js'
@@ -47,7 +47,7 @@ export function itemDraw(
   if (!isVisible(item)) return
   state.draw.c2d.save()
   state.draw.c2d.translate(item.x, item.y)
-  const angle = -((state.time % 5_000) / 5_000) * Math.PI * 2
+  const angle = -((state.drawTime % 5_000) / 5_000) * Math.PI * 2
   state.draw.c2d.rotate(angle)
   state.draw.c2d.translate(-item.x, -item.y)
   drawTriangle(state.draw.c2d, item, white90)

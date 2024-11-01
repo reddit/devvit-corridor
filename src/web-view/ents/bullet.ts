@@ -1,10 +1,10 @@
 import {type Box, type XY, boxHits} from '../../shared/types/2d.js'
+import type {UTCMillis} from '../../shared/types/time.js'
 import type {UUID} from '../../shared/types/uuid.js'
 import {isVisible} from '../grid.js'
 import {beep} from '../types/audio.js'
 import type {GameState} from '../types/game-state.js'
 import type {Layer} from '../types/layer.js'
-import type {UTCMillis} from '../types/time.js'
 import {drawCircle} from '../utils/draw.js'
 import {
   bulletSizePx,

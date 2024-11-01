@@ -1,4 +1,4 @@
-import {type UTCMillis, utcMillisNow} from '../types/time.js'
+import {type UTCMillis, utcMillisNow} from '../../shared/types/time.js'
 
 export class Throttle<T extends unknown[]> {
   fn: (this: undefined, ...args: T) => void

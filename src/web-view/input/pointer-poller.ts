@@ -3,6 +3,7 @@ import type {Cam} from '../types/cam.js'
 
 export class PointerPoller {
   bits: number = 0
+  allowContextMenu: boolean = false
   readonly clientXY: XY = {x: 0, y: 0}
   type?: 'mouse' | 'touch' | 'pen' | undefined
   xy: Readonly<XY> = {x: 0, y: 0}
@@ -51,7 +52,9 @@ export class PointerPoller {
     this.#on = 0
   }
 
-  #onContextMenuEvent = (ev: Event): void => ev.preventDefault()
+  #onContextMenuEvent = (ev: Event): void => {
+    if (!this.allowContextMenu) ev.preventDefault()
+  }
 
   #onPointEvent = (ev: PointerEvent): void => {
     // ignore non-primary inputs to avoid flickering between distant points.

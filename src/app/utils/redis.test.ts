@@ -3,6 +3,8 @@ import {AppPostRecord, appPostRecordParse} from './redis.js'
 
 test('appPostRecordParse()', () => {
   const post = {
+    authorId: 't2_0',
+    authorName: 'authorName',
     createdAt: new Date(),
     id: 't3_0',
     subredditId: 't5_0',

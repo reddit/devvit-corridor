@@ -6,7 +6,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "devvit": "0.11.1",
+    "devvit": "0.11.2",
     "esbuild": "0.24.0",
     "mem-font": "11.0.0-2",
     "typescript": "5.7.0-beta",

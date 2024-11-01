@@ -16,10 +16,6 @@ export class MessageProc {
     this.state = state
   }
 
-  postMessage(msg: WebViewMessage): void {
-    parent.postMessage(msg, document.referrer)
-  }
-
   register(op: 'add' | 'remove'): void {
     globalThis[`${op}EventListener` as const](
       'message',
@@ -58,19 +54,23 @@ export class MessageProc {
           this.state.connected = false
           break
 
-        case 'Init':
+        case 'Init': {
           this.state.debug = msg.debug
           if (this.state.debug) console.log(this)
+          this.state.author = msg.author
+          this.state.completed = msg.completed
           this.state.p1.client = msg.p1.client
           this.state.p1.t2 = msg.p1.t2
           this.state.p1.name = msg.p1.name
           this.state.p1.snoovatarURL = msg.p1.snoovatarURL
-          this.postMessage({
+          this.state.init = true
+          postMessage({
             id: this.state.msgID,
             type: 'Init',
             uuid: this.state.p1.uuid
           })
           break
+        }
 
         case 'PeerUpdate': {
           if (msg.version !== peerSchemaVersion) {
@@ -82,8 +82,13 @@ export class MessageProc {
           if (prev && prev.type !== 'Peer')
             throw Error('recevied message from self')
           const peer = Peer(prev, msg)
-          this.state.zoo.replace(this.state.cam, peer)
+          // this.state.zoo.replace(this.state.cam, peer)
           this.state.peers[peer.uuid] = peer
+
+          // hacky sack
+          if (this.state.p1.t2 !== this.state.author.t2)
+            this.state.p1.score = peer.score
+
           break
         }
 
@@ -92,4 +97,8 @@ export class MessageProc {
       }
     }
   }
+}
+
+export function postMessage(msg: WebViewMessage): void {
+  parent.postMessage(msg, document.referrer)
 }

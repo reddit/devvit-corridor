@@ -1,4 +1,4 @@
-import type {XY} from '../../shared/types/2d.js'
+import type {Box, XY} from '../../shared/types/2d.js'
 
 declare global {
   type C2D = CanvasRenderingContext2D
@@ -48,7 +48,7 @@ export function drawText(
     | 'TopRight'
     | 'TopCenter', // to-do: rethink terminology.
   stroke: string
-): void {
+): Box {
   c2d.fillStyle = '#000'
   c2d.font = '12px mem'
   c2d.strokeStyle = stroke
@@ -99,6 +99,13 @@ export function drawText(
   }
   c2d.strokeText(text, x, y)
   c2d.fillText(text, x, y)
+  const h =
+    metrics.actualBoundingBoxAscent +
+    metrics.actualBoundingBoxDescent +
+    c2d.lineWidth * 2
+  // to-do: declare w/h above and use there and here. figure out if I need
+  // different x/y offsets for each case too.
+  return {x, y: y - h, w: c2d.lineWidth * 2 + metrics.width, h}
 }
 
 export function drawTriangle(c2d: C2D, xy: Readonly<XY>, fill: string): void {

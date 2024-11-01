@@ -18,10 +18,10 @@ import {
 import {type LeechMob, leechMobDraw, leechMobUpdate} from './mob.js'
 import {type Outdated, outdatedDraw, outdatedUpdate} from './outdated.js'
 import {
-  type PlayButton,
-  playButtonDraw,
-  playButtonUpdate
-} from './play-button.js'
+  type PlayNewButton,
+  playNewButtonDraw,
+  playNewButtonUpdate
+} from './play-new-button.js'
 import {
   type P1,
   type Peer,
@@ -42,7 +42,7 @@ export type Ent =
   | LeechMob
   | Outdated
   | Peer
-  | PlayButton
+  | PlayNewButton
   | P1
   | Score
   | Status
@@ -66,14 +66,6 @@ export class Zoo {
     const {c2d} = state.draw
 
     for (const layer of layerDrawOrder) {
-      // if (
-      //   state.paused &&
-      //   layer !== 'Cursor' &&
-      //   layer !== 'Level' &&
-      //   layer !== 'UI'
-      // )
-      //   continue
-
       c2d.save()
       if (layer !== 'Cursor' && layer !== 'Level' && layer !== 'UI')
         c2d.translate(-state.cam.x, -state.cam.y)
@@ -107,8 +99,8 @@ export class Zoo {
           case 'Peer':
             peerDraw(ent, state)
             break
-          case 'PlayButton':
-            playButtonDraw(ent, state)
+          case 'PlayNewButton':
+            playNewButtonDraw(ent, state)
             break
           case 'Score':
             scoreDraw(ent, state)
@@ -153,6 +145,11 @@ export class Zoo {
   update(state: GameState): void {
     this.#viewportEnts = {}
     for (const ent of Object.values(this.#ents)) {
+      if (isEntVisible(state.cam, ent)) {
+        this.#viewportEnts[ent.layer] ??= {}
+        this.#viewportEnts[ent.layer]![ent.uuid] = ent // allow this to be stale I guess.
+      }
+
       if (
         state.paused &&
         ent.layer !== 'Cursor' &&
@@ -161,10 +158,6 @@ export class Zoo {
       )
         continue
 
-      if (isEntVisible(state.cam, ent)) {
-        this.#viewportEnts[ent.layer] ??= {}
-        this.#viewportEnts[ent.layer]![ent.uuid] = ent // allow this to be stale I guess.
-      }
       switch (ent.type) {
         case 'Bullet':
           bulletUpdate(ent, state)
@@ -193,8 +186,8 @@ export class Zoo {
         case 'Peer':
           peerUpdate(ent, state)
           break
-        case 'PlayButton':
-          playButtonUpdate(ent, state)
+        case 'PlayNewButton':
+          playNewButtonUpdate(ent, state)
           break
         case 'Score':
           scoreUpdate(ent, state)

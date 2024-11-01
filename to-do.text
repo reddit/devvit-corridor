@@ -1,2 +1,9 @@
+no shortage of fun ideas to explore in a dungeon crawler, roguelike.
+
+
+
+disconnect when backgrounded.
+enable multi-touch so phone usage is easier.
 add save screenshot button; I think I can do this with Canvas.toBlob().
 experiment with WebGL instead of canvas.
+

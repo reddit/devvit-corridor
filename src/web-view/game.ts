@@ -6,6 +6,8 @@ import {
   peerSchemaVersion,
   peerThrottleMillis
 } from '../shared/types/message.js'
+import {anonUsername, noT2} from '../shared/types/tid.js'
+import {type UTCMillis, utcMillisNow} from '../shared/types/time.js'
 import {CorridorLevel} from './ents/levels/corridor-level.js'
 import {P1} from './ents/player.js'
 import {Zoo} from './ents/zoo.js'
@@ -16,11 +18,11 @@ import {Assets} from './types/assets.js'
 import {Audio} from './types/audio.js'
 import {Cam} from './types/cam.js'
 import type {GameState} from './types/game-state.js'
-import {MessageProc} from './types/message-proc.js'
-import {type UTCMillis, utcMillisNow} from './types/time.js'
+import {MessageProc, postMessage} from './types/message-proc.js'
 import {Throttle} from './utils/throttle.js'
 
-const lvlMag: number = xyMagnitude({x: lvlWH.w, y: lvlWH.h})
+// to-do: distance audio.
+// const lvlMag: number = xyMagnitude({x: lvlWH.w, y: lvlWH.h})
 
 export class Game {
   static async new(): Promise<Game> {
@@ -45,22 +47,26 @@ export class Game {
     const ctrl = new Input(cam, canvas)
     ctrl.mapDefault()
 
-    const p1 = P1(lvlWH) // to-do: move lvlWH to state subprop.
+    const p1 = P1() // to-do: move lvlWH to state subprop.
 
     const zoo = new Zoo()
 
     this.#state = {
       assets,
       audio,
+      author: {score: null, username: anonUsername, t2: noT2},
       cam,
       canvas,
+      completed: false,
       connected: false,
       ctrl,
       debug: false,
       draw: undefined,
+      init: false,
       lvlWH,
       millis: 0,
       paused: false,
+      drawTime: 0 as UTCMillis,
       peers: {},
       time: 0 as UTCMillis,
       msgID: -1, // initialized to 0 in app.
@@ -84,6 +90,8 @@ export class Game {
   }
 
   #onLoop = (): void => {
+    // to-do: this isn't right because I can cruise around town for a long time
+    // with A down.
     if (
       this.#state.ctrl.isOffStart('A') &&
       this.#state.audio.ctx.state !== 'running'
@@ -91,6 +99,9 @@ export class Game {
       void this.#state.audio.ctx.resume() // don't await; this can hang.
 
     this.#state.time = utcMillisNow()
+    this.#state.drawTime = this.#state.paused
+      ? this.#state.drawTime
+      : this.#state.time
     this.#state.millis = this.#looper.millis
     this.#state.draw = this.#looper.draw
     if (!this.#state.draw) return
@@ -136,7 +147,7 @@ export class Game {
       dir: {x: p1.dir.x, y: p1.dir.y},
       xy: {x: p1.x, y: p1.y}
     }
-    this.#msgProc.postMessage({
+    postMessage({
       id: this.#state.msgID,
       msg: {
         peer: true,

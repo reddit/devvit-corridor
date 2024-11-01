@@ -19,7 +19,7 @@ export const leechRangePx: number = 16 * tileSizePx
 export const playerHurtboxSizePx: number = tileSizePx
 export const playerSpeedPxMillis: number = 0.05
 export const playerFirePeriodMillis: number = 1_500
-export const playerMaxHP: number = 100
+export const playerMaxHP: number = 5
 export const playerDefaultHP: number = playerMaxHP
 
 export const peerLerpRatio: number = 0.1

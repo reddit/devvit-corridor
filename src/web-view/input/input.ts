@@ -32,6 +32,10 @@ export class Input<T extends string> {
     this.#pointer = new PointerPoller(cam, canvas)
   }
 
+  set allowContextMenu(allow: boolean) {
+    this.#pointer.allowContextMenu = allow
+  }
+
   get clientPoint(): Readonly<XY> {
     return this.#pointer.clientXY
   }

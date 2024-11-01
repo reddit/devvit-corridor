@@ -1,9 +1,38 @@
 # 🌚 [snoosings](https://reddit.com/r/snoosings)
 
+
+started by verbatim copying snoosings.
+
+
+just _streaming_ the state is going to be a lot harder than I thought. the original game was going to just be the player and maybe a few monsters and items. the new game naively plunks 32k ents in. these are some of the ideas I considered and where I saw my last 12 working hours going to be hard:
+
+- only send the current viewport. this would give you kind of a TV-like stream but since realtime is slow and size restricted, we can't send frame by frame. we have to extrapolate. this would likely cause missed bullets to hit and vice versa as the player lerped around. I don't think it would be compelling with the current realtime responiveness. additionally, if the viewer can play and not just view, you have to figure out which enemies target which player and who is the authority on the current state of where enemies are.
+- send an initial state 30 seconds ago plus a buffer of all controller inputs received. this sounds ok-ish but I think there's a lot of opportunity to get out of sync. I have to run the simulation at the viewer's framerate and the timing is not going to match. I'll also have to blow away the world every time I get a new message to reset that sync. if I was writing streamable MSPaint, I could report each tool picked and the exact stream of cursor movements. the timing wouldn't matter much because nothing on the canvas is moving.
+- send the entire world every message and reset the simulation on every receive. I think this would require a lot of data, a lot of visibly lerping, and a lot of processing for each client. I think it'd look really glitchy.
+- send an initial state 30 seconds ago plus a buffer of all state changes using a command pattern with absolute coordinates. I'm not quite sure what the lerping story is and this would require a rearchitecture to operate on commands.
+
+so these sorts of games seem hard to do in realtime
+- any game with client contention. many reflex games might fall into this category. if you reimplemented Diablo II, you'd probably want to clone loot to both players if there was contention for picking it up since loss is frustrating and we don't have a server authority.
+- any game where you have to reconstruct state and timing matters.
+
+games that might work:
+- any game where each client is the authority on their avatar and the world is static or the timing doesn't matter.
+- player vs enemy games where the monsters don't move a lot and there's not many of them as at any one time. for example, in Diablo II a barbarian has to walk up to a monster and slash them usually multiple times. if multiple players are fighting side-by-side, the only contention is for loot.
+
+if I want to more seriously pursue this, I need to build the game around that concept. I was just trying to build a single-player game and it was hard to pivot. I think I will need at least: approach, seedable random number generator.
+
+I think there are probably a great big bag of tricks you can use to work around these issues but I don't have the time to realize them and some would probably require a major rearchitecture.
+
+realtime was kind of [snoosings]() thing. the game was built around being able to multiplay. it was disappointing to realize that I had built a game that couldn't duplicate the entire approach.
+
+
+
+
+
 i run both `npm start` and `npm run playtest` in parallel so I get instant feedback on local only issues and more integrationy issues come.
 
 
-there's a lot of stuff you can do with these mechanics! these graphics! there's so much I want to explore!
+there's a lot of stuff you can do with these mechanics! these graphics! there's so much I want to explore from more diablo-like games to more vampire survivorish!
 
 
 

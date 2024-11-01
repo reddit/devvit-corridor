@@ -9,7 +9,7 @@
     "tsBuildInfoFile": "../../dist/web-view/tsconfig.tsbuildinfo"
   },
   // https://github.com/Microsoft/TypeScript/issues/25636
-  "include": ["**/*", "**/*.json", "../shared/types/2d.ts"],
+  "include": ["**/*", "**/*.json"],
   "exclude": ["**/*.test.ts"],
   "references": [{ "path": "../shared" }]
 }

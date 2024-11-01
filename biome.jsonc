@@ -8,7 +8,7 @@
     },
     "linter": { "enabled": true }
   },
-  "files": { "ignore": ["webroot/index.js"] },
+  "files": { "ignore": ["webroot/index.js"], "maxSize": 2400000 },
   "formatter": { "indentStyle": "space" },
   "javascript": {
     "formatter": {

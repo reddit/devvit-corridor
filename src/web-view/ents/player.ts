@@ -1,5 +1,4 @@
 import {
-  type WH,
   type XY,
   xyAdd,
   xyCloseTo,
@@ -10,20 +9,18 @@ import {
 import {type PeerMessage, disconnectMillis} from '../../shared/types/message.js'
 import type {PlayerSerial} from '../../shared/types/serial.js'
 import {anonSnoovatarURL, anonUsername, noT2} from '../../shared/types/tid.js'
+import {type UTCMillis, utcMillisNow} from '../../shared/types/time.js'
 import type {UUID} from '../../shared/types/uuid.js'
 import {lerp} from '../../shared/utils/math.js'
 import {gridAt} from '../grid.js'
 import type {GameState} from '../types/game-state.js'
 import type {Layer} from '../types/layer.js'
-import {type UTCMillis, utcMillisNow} from '../types/time.js'
 import {
   drawCircle,
   drawCircleOutlineStuff,
-  drawOtherTriangle,
-  drawText
+  drawOtherTriangle
 } from '../utils/draw.js'
 import {
-  fontLineHeightPx,
   peerLerpRatio,
   playerDefaultHP,
   playerFirePeriodMillis,
@@ -31,7 +28,7 @@ import {
   playerMaxHP,
   playerSpeedPxMillis
 } from '../utils/metrics.js'
-import {white, white50, white80} from '../utils/palette.js'
+import {white, white50} from '../utils/palette.js'
 import {Bullet} from './bullet.js'
 import type {Item} from './item.js'
 
@@ -51,7 +48,7 @@ export type Peer = PlayerSerial & {
 
 export type Player = P1 | Peer
 
-export function P1(lvlWH: Readonly<WH>): P1 {
+export function P1(): P1 {
   return {
     client: '',
     dir: {x: 0, y: 0},
@@ -202,10 +199,10 @@ function playerDraw(
       {
         x:
           player.x +
-          4 * Math.sin((i + 1) * state.time * 0.002 * (invincible ? 2 : 1)),
+          4 * Math.sin((i + 1) * state.drawTime * 0.002 * (invincible ? 2 : 1)),
         y:
           player.y +
-          4 * Math.cos((i + 1) * state.time * 0.001 * (invincible ? 2 : 1))
+          4 * Math.cos((i + 1) * state.drawTime * 0.001 * (invincible ? 2 : 1))
       },
       radius,
       `rgba(255, 255, 255, ${opacity})`
@@ -215,11 +212,12 @@ function playerDraw(
   if (invincible) {
     const opacity = Math.min(
       1,
-      1.5 - Math.min(1, (state.time - invincible.picked) / invincible.duration)
+      1.5 -
+        Math.min(1, (state.drawTime - invincible.picked) / invincible.duration)
     )
     c2d.save()
     c2d.translate(player.x, player.y)
-    const angle = -((state.time % 2_000) / 2_000) * Math.PI * 2
+    const angle = -((state.drawTime % 2_000) / 2_000) * Math.PI * 2
     c2d.rotate(angle)
     c2d.translate(-player.x, -player.y)
     drawOtherTriangle(c2d, player, `rgba(255, 255, 255, ${opacity})`)
@@ -239,13 +237,13 @@ function playerUpdate(player: Player, state: GameState): void {
     player.x =
       player.x +
       state.millis * playerSpeedPxMillis * dir.x * (invincible ? 1.25 : 1)
-    if (gridAt(xyTrunc(xyAdd(player, offset))) === '█') player.x = x
+    if (gridAt(xyTrunc(xyAdd(player, offset))) === '⬤') player.x = x
   }
   if (dir.y) {
     const {y} = player
     player.y =
       player.y +
       state.millis * playerSpeedPxMillis * dir.y * (invincible ? 1.25 : 1)
-    if (gridAt(xyTrunc(xyAdd(player, offset))) === '█') player.y = y
+    if (gridAt(xyTrunc(xyAdd(player, offset))) === '⬤') player.y = y
   }
 }

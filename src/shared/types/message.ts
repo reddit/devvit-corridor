@@ -1,4 +1,4 @@
-import type {PlayerSerial} from './serial.js'
+import type {Author, PlayerSerial} from './serial.js'
 import type {T2} from './tid.js'
 import type {UUID} from './uuid.js'
 
@@ -33,16 +33,19 @@ export type NoIDAppMessage =
        * but that granularity doesn't make sense in the web view.
        */
       debug: boolean
+      author: Author
+      completed: boolean
+      // to-do: rename profile.
       p1: {client: string; name: string; snoovatarURL: string; t2: T2}
-      type: 'Init'
+      readonly type: 'Init'
     }
-  | {msg: PeerMessage; type: 'Peer'}
+  | {msg: PeerMessage; readonly type: 'Peer'}
 
 /** a realtime message from another instance. */
 export type PeerMessage = {
   peer: true
   player: PlayerSerial
-  type: 'PeerUpdate'
+  readonly type: 'PeerUpdate'
   /**
    * filter out messages from different versions. to-do: consider an upgrade
    * banner or filtering out at the channel level.
@@ -60,8 +63,10 @@ export type WebViewMessage = {
 } & NoIDWebViewMessage
 
 export type NoIDWebViewMessage =
-  | {uuid: UUID; type: 'Init'}
-  | {msg: PeerMessage; type: 'Peer'}
+  | {uuid: UUID; readonly type: 'Init'}
+  | {score: number; readonly type: 'GameOver'}
+  | {readonly type: 'NewGame'}
+  | {msg: PeerMessage; readonly type: 'Peer'}
 
 /**
  * the transmitted and expected message version. messages not at a matching
