@@ -63,8 +63,9 @@ export function corridorLevelUpdate(
     state.completed ||
     state.p1.hp <= 0
   ) {
-    if (state.p1.t2 === state.author.t2)
-      // only send game over if player triggered it
+    if (state.p1.t2 === state.author.t2 && !state.completed)
+      // only send game over if player triggered it and we're not revisiting an
+      // old game.
       postMessage({type: 'GameOver', score: state.p1.score, id: state.msgID})
     state.zoo.remove(lvl)
     state.zoo.replace(state.cam, GameOverLevel(state))

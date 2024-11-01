@@ -1,6 +1,8 @@
 # 🌚 [snoosings](https://reddit.com/r/snoosings)
 
 
+want to explore more in this art style too. maybe with a select few colors mixed in. I'm usually not a  fan of pastiche but I think this pixelated style really appeals to me and doesn't get bogged down in precision.
+
 started by verbatim copying snoosings.
 
 
