@@ -18,7 +18,7 @@
   "license": "BSD-3-Clause",
   "name": "corridor",
   "scripts": {
-    "build:web": "esbuild --banner:js='new globalThis.EventSource(\"/esbuild\").addEventListener(\"change\", () => location.reload());' --bundle --format=esm --log-level=info --outfile=webroot/index.js src/web-view/index.ts",
+    "build:web": "esbuild --bundle --format=esm --log-level=info --outfile=webroot/index.js src/web-view/index.ts",
     "clean": "rm -rf dist webroot/index.js",
     "devvit:playtest": "devvit playtest --log-runtime corridorgame|grep --invert --line-buffered '\\[api\\]'",
     "format": "npm run formatter -- --fix",
@@ -26,7 +26,7 @@
     "playtest": "trap 'kill 0' exit; npm run build:web -- --watch=forever& npm run devvit:playtest& wait",
     "preversion": "[ -z \"$(git status -z)\" ]",
     "prepublishOnly": "! git symbolic-ref --quiet HEAD || git push --follow-tags origin \"$(git branch --show-current)\"",
-    "start": "npm run build:web -- --serve=1234 --servedir=webroot --watch=forever --serve",
+    "start": "npm run build:web -- --banner:js='new globalThis.EventSource(\"/esbuild\").addEventListener(\"change\", () => location.reload());' --serve=1234 --servedir=webroot --watch=forever --serve",
     "test": "npm run test:format && npm run test:types && npm run test:unit",
     "test:format": "npm run formatter",
     "test:types": "tsc --build",
