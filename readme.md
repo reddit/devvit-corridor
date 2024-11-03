@@ -17,14 +17,14 @@ I'm going to start doing:
 - try something brainy. I'm guessing more users are looking for something like solitaire than Teleglitch.
 - be tactical about social. networking is hard. I will probably avoid MMOs and pick more focused social features going forward under these time constraints.
 - be big and colorful. I like the aesthetic of corridor but I knew it'd be polarizing.
+- think critically when planning. you don't get what you don't aim at. I want to be careful not to build something I know I don't want.
 - try noEmit and the native unit test runner.
 
 I'm going to keep doing:
 
 - improve speed. keep investing in refactoring the parts of the game I will copy to the next as a template.
 - when planning, think tactically of the cost of the whole. code, art, and sound are each expensive. what must I draw? do I need physics? don't handwave art.
-- think critically when planning. you don't get what you don't aim at. I want to be careful not to build something I know I don't want.
-- pick an art style that is fast and fun. I was surprised that getting a pleasing pixelated look was so easy as I'm usually pretty picky about it. simple and large blobby shapes were great. the consistent tooth of pixelation noise gave a satisfying texture and worked will the blobs. big oval blobs and fundamental shapes are easy to draw, fun to vary, and easy to read. I feel I have a better sense of what works for fast fun art now and that although I didn't nail a simple game, I felt like I got close to simple art. I'm looking forward to a future opportunity to mix colorful blobs and pixelation.
+- pick an art style that is fast and fun. I was surprised that getting a pleasing pixelated look was so easy as I'm usually pretty picky about it. simple and large blobby shapes were great. the consistent tooth of pixelation noise gave a satisfying texture and worked well the blobs. big oval blobs and fundamental shapes are easy to draw, fun to vary, and easy to read. I feel I have a better sense of what works for fast fun art now and that although I didn't nail a simple game, I felt like I got close to simple art. I'm looking forward to a future opportunity to mix colorful blobs and pixelation.
 - make a one page mock. I think this really helped me understand the general direction and not get lost.
 
 ### what would make corridor fun?
@@ -115,7 +115,7 @@ I made all online data optional and deliverable at any time. this allowed me to 
 
 it occurred to me for the first time that I might use type-stripping for unit tests and skip the vitest dependency.
 
-```json
+```jsonc
 // package.json
 "test:unit": "NODE_OPTIONS='--experimental-strip-types --no-warnings=ExperimentalWarning' node src/**/*.test.*",
 ```
