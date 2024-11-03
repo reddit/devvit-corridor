@@ -91,12 +91,13 @@ export function App(ctx: Devvit.Context): JSX.Element {
     onSubscribed: () => queueMsg({type: 'Connected'}),
     onUnsubscribed: () => queueMsg({type: 'Disconnected'})
   })
-  chan.subscribe()
+  if (!post.completed) chan.subscribe()
+  else chan.unsubscribe()
   const fakePeerInterval = useFakePeekInterval(queueMsg)
   if (debugFakePeers && chan.status === ChannelStatus.Connected)
     fakePeerInterval.start()
 
-  async function onMessage(webViewMsg: WebViewMessage): Promise<void> {
+  async function onMsg(webViewMsg: WebViewMessage): Promise<void> {
     let msg: WebViewMessage | PeerMessage = webViewMsg
 
     // if (debug)
@@ -127,6 +128,14 @@ export function App(ctx: Devvit.Context): JSX.Element {
         await submitNewPost(ctx)
         break
 
+      case 'Pause':
+        chan.unsubscribe()
+        break
+
+      case 'Resume':
+        chan.subscribe()
+        break
+
       default:
         msg.peer satisfies true
         if (chan.status !== ChannelStatus.Connected) break
@@ -139,7 +148,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   return (
     <webview
       grow
-      onMessage={onMessage as (msg: JSONObject) => Promise<void>}
+      onMessage={onMsg as (msg: JSONObject) => Promise<void>}
       state={msgQueue}
       url='index.html'
     />

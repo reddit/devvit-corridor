@@ -66,7 +66,9 @@ export type NoIDWebViewMessage =
   | {uuid: UUID; readonly type: 'Init'}
   | {score: number; readonly type: 'GameOver'}
   | {readonly type: 'NewGame'}
+  | {readonly type: 'Pause'}
   | {msg: PeerMessage; readonly type: 'Peer'}
+  | {readonly type: 'Resume'}
 
 /**
  * the transmitted and expected message version. messages not at a matching

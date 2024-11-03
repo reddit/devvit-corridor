@@ -1,9 +1,19 @@
+put border around button.
+tweak shooting sound.
+Android score not showing on post detail page? is this a boot issue?
+add waves of enemies; don't spawn enemies for entire map in advance.
+add compelling death / start / share screen.
+add sound for death.
+emphasize the score more.
+disconnect when game completed.
 no shortage of fun ideas to explore in a dungeon crawler, roguelike.
-
-
-
-disconnect when backgrounded.
 enable multi-touch so phone usage is easier.
 add save screenshot button; I think I can do this with Canvas.toBlob().
 experiment with WebGL instead of canvas.
-
+improve ent update performance.
+I can implement it as a comment trigger with some kind of scaling algorithm where the first comment spawns a health orb or mob, then the third, then the fifth, then the tenth and every tenth after that or something.
+single player is fighting baddies, multiplayer is boss, group boss battle, room to choose which boss or which stage to fight.
+randomized item with randomized stats for loot.
+black dots chasing you should get progressively faster? there's a lot of variation I'd like to add.
+more prominent score and bigger announcements to users.
+new game hover should be dramatic. maybe the whole screen white gradually.

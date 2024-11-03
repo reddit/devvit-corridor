@@ -1,7 +1,7 @@
 import type {UUID} from '../../shared/types/uuid.js'
+import {drawText} from '../types/draw.js'
 import type {GameState} from '../types/game-state.js'
 import type {Layer} from '../types/layer.js'
-import {drawText} from '../utils/draw.js'
 import {quarterSpacePx} from '../utils/metrics.js'
 import {white90} from '../utils/palette.js'
 

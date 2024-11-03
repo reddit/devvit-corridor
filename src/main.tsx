@@ -10,17 +10,17 @@ Devvit.configure({realtime: true, redis: true, redditAPI: true})
 Devvit.addCustomPostType({name: 'Corridor', height: 'tall', render: App})
 
 Devvit.addMenuItem({
-  label: 'New Corridor Game',
+  label: 'Make Corridor',
   location: 'subreddit',
   onPress: async (_ev, ctx) => submitNewPost(ctx)
 })
 
 Devvit.addTrigger({
   event: 'AppUpgrade',
-  onEvent(_ev, ctx) {
+  onEvent(_ev, _ctx) {
     if (upgrade) {
       console.log(`upgrading app to schema v${redisSchemaVersion}`)
-      // to-do: schedule n updates.
+      // to-do: schedule n updates for post preview and redis.
       // post.setCustomPostPreview(…)
     }
   }

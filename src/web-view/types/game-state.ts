@@ -5,10 +5,10 @@ import type {UUID} from '../../shared/types/uuid.js'
 import type {P1, Player} from '../ents/player.js'
 import type {Zoo} from '../ents/zoo.js'
 import type {DefaultButton, Input} from '../input/input.js'
-import type {Draw} from '../looper.js'
 import type {Assets} from './assets.js'
 import type {Audio} from './audio.js'
 import type {Cam} from './cam.js'
+import type {Draw} from './draw.js'
 
 // to-do: better type and arg name?
 export type GameState = {

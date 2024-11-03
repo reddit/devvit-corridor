@@ -1,9 +1,9 @@
 import {type Box, boxHits, xySub} from '../../shared/types/2d.js'
 import type {UUID} from '../../shared/types/uuid.js'
+import {drawText} from '../types/draw.js'
 import type {GameState} from '../types/game-state.js'
 import type {Layer} from '../types/layer.js'
 import {postMessage} from '../types/message-proc.js'
-import {drawText} from '../utils/draw.js'
 import {white, white80} from '../utils/palette.js'
 
 export type PlayNewButton = Box & {
@@ -63,7 +63,7 @@ export function playNewButtonDraw(
 
   const box = drawText(
     state.draw.c2d,
-    newGame ? 'new corridor' : 'play',
+    newGame ? 'make corridor' : 'play',
     center,
     'Center',
     btn.hit ? white : white80

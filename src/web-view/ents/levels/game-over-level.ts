@@ -1,9 +1,9 @@
 import type {Box} from '../../../shared/types/2d.js'
 import type {UUID} from '../../../shared/types/uuid.js'
 import {gridAt, lvlWH} from '../../grid.js'
+import {drawCircle} from '../../types/draw.js'
 import type {GameState} from '../../types/game-state.js'
 import type {Layer} from '../../types/layer.js'
-import {drawCircle} from '../../utils/draw.js'
 import {tileSizePx} from '../../utils/metrics.js'
 import {PlayNewButton} from '../play-new-button.js'
 
@@ -42,7 +42,7 @@ export function gameOverLevelDraw(
   const {c2d} = state.draw
   const radius = tileSizePx / 2
 
-  // to-do: don't copy and paste all this from corridor.
+  // to-do: don't copy and paste all this from corridor-level.
 
   // clear. this should be in level coordinates but camera movements causes an
   // unpleasant shimmering.

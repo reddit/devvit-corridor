@@ -19,6 +19,6 @@ export async function submitNewPost(ctx: Context): Promise<void> {
 
   await redisPutPost(ctx.redis, post)
 
-  ctx.ui.showToast({appearance: 'success', text: `${title} created.`})
+  ctx.ui.showToast({appearance: 'success', text: `${title} made.`})
   ctx.ui.navigateTo(post)
 }

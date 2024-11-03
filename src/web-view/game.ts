@@ -13,10 +13,11 @@ import {P1} from './ents/player.js'
 import {Zoo} from './ents/zoo.js'
 import {lvlWH} from './grid.js'
 import {Input} from './input/input.js'
-import {type Draw, Looper} from './looper.js'
+import {Looper} from './looper.js'
 import {Assets} from './types/assets.js'
 import {Audio} from './types/audio.js'
 import {Cam} from './types/cam.js'
+import type {Draw} from './types/draw.js'
 import type {GameState} from './types/game-state.js'
 import {MessageProc, postMessage} from './types/message-proc.js'
 import {Throttle} from './utils/throttle.js'
@@ -79,6 +80,8 @@ export class Game {
 
     this.#msgProc = new MessageProc(this.#state as GameState)
     this.#looper = new Looper(assets, canvas, cam, ctrl)
+    this.#looper.onPause = this.#onPause
+    this.#looper.onResume = this.#onResume
 
     initDoc(assets, canvas)
   }
@@ -137,6 +140,14 @@ export class Game {
       this.#postPeerUpdate.schedule(now)
 
     this.#looper.loop = this.#onLoop
+  }
+
+  #onPause = (): void => {
+    postMessage({type: 'Pause', id: this.#state.msgID})
+  }
+
+  #onResume = (): void => {
+    postMessage({type: 'Resume', id: this.#state.msgID})
   }
 
   // to-do: move to message processor.

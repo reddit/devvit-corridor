@@ -3,9 +3,9 @@ import type {UTCMillis} from '../../shared/types/time.js'
 import type {UUID} from '../../shared/types/uuid.js'
 import {isVisible, lvlWH} from '../grid.js'
 import {beep} from '../types/audio.js'
+import {drawCircle} from '../types/draw.js'
 import type {GameState} from '../types/game-state.js'
 import type {Layer} from '../types/layer.js'
-import {drawCircle} from '../utils/draw.js'
 import {
   leechRangePx,
   leechSizePx,
@@ -48,6 +48,8 @@ export function leechMobUpdate(mob: LeechMob, state: GameState): void {
         const duration = 100
         if (state.time - mob.played > duration) {
           beep(state.audio.ctx, 'sine', 100, 400, duration / 1000)
+          // audioBeep(ctx, 'sine', 500, 1200, 0.05)
+          // audioBeep(ctx, 'sine', 100, 400, 0.1)
           mob.played = state.time
         }
         state.p1.hp -= (10 * state.millis) / 1000

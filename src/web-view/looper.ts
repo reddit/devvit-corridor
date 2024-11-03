@@ -1,8 +1,7 @@
 import type {Input} from './input/input.js'
 import type {Assets} from './types/assets.js'
 import type {Cam} from './types/cam.js'
-
-export type Draw = {checkerboard: CanvasPattern; c2d: C2D}
+import {Draw} from './types/draw.js'
 
 /** manages window lifecycle for input and rendering. */
 export class Looper {
@@ -13,6 +12,8 @@ export class Looper {
   readonly canvas: HTMLCanvasElement
   /** the exact duration in millis to apply on a given update step. */
   millis: number = 0
+  onPause: () => void = () => {}
+  onResume: () => void = () => {}
   /** the relative timestamp in millis. */
   time?: number | undefined
 
@@ -31,15 +32,10 @@ export class Looper {
     this.canvas = canvas
     this.#cam = cam
     this.#ctrl = ctrl
-    this.draw = this.#newDraw()
   }
 
   cancel(): void {
-    if (this.#frame != null) cancelAnimationFrame(this.#frame)
-    this.#frame = undefined
-    this.millis = 0
-    this.time = undefined
-    this.#ctrl.reset()
+    this.#pause()
     this.#loop = undefined
   }
 
@@ -60,34 +56,23 @@ export class Looper {
       this.canvas[fn](type, this.#onEvent, true)
     }
     globalThis[fn]('visibilitychange', this.#onEvent, true)
-    if (op === 'add') this.draw = this.#newDraw()
+    this.draw = op === 'add' ? Draw(this.assets, this.canvas) : undefined
     this.#ctrl.register(op)
-  }
-
-  #newDraw(): Draw | undefined {
-    const c2d =
-      this.canvas.getContext('2d', {alpha: false, willReadFrequently: false}) ??
-      undefined
-    if (!c2d) return
-    const checkerboard = c2d.createPattern(this.assets.checkerboard, 'repeat')
-    if (!checkerboard) return
-    return {c2d, checkerboard}
   }
 
   #onEvent = (event: Event): void => {
     event.preventDefault()
-    if (event.type === 'contextrestored') this.draw = this.#newDraw()
+    if (event.type === 'contextrestored')
+      this.draw = Draw(this.assets, this.canvas)
 
     if (this.draw && !document.hidden) {
-      if (this.#loop) this.#frame ??= requestAnimationFrame(this.#onFrame)
-    } else {
-      // to-do: disconnect the socket when not in use.
-      if (this.#frame != null) cancelAnimationFrame(this.#frame)
-      this.#frame = undefined
-      this.millis = 0
-      this.time = undefined
-      this.#ctrl.reset()
+      if (this.#loop) {
+        if (!this.time) this.onResume()
+        this.#frame ??= requestAnimationFrame(this.#onFrame)
+      }
     }
+    // to-do: disconnect the socket when not in use.
+    else this.#pause()
   }
 
   #onFrame = (time: number): void => {
@@ -128,5 +113,14 @@ export class Looper {
 
     this.#ctrl.poll(this.millis)
     loop?.()
+  }
+
+  #pause(): void {
+    if (this.time) this.onPause()
+    if (this.#frame != null) cancelAnimationFrame(this.#frame)
+    this.#frame = undefined
+    this.millis = 0
+    this.time = undefined
+    this.#ctrl.reset()
   }
 }

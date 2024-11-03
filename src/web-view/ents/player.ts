@@ -13,13 +13,13 @@ import {type UTCMillis, utcMillisNow} from '../../shared/types/time.js'
 import type {UUID} from '../../shared/types/uuid.js'
 import {lerp} from '../../shared/utils/math.js'
 import {gridAt} from '../grid.js'
-import type {GameState} from '../types/game-state.js'
-import type {Layer} from '../types/layer.js'
 import {
   drawCircle,
   drawCircleOutlineStuff,
   drawOtherTriangle
-} from '../utils/draw.js'
+} from '../types/draw.js'
+import type {GameState} from '../types/game-state.js'
+import type {Layer} from '../types/layer.js'
 import {
   peerLerpRatio,
   playerDefaultHP,
