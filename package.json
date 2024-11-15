@@ -1,16 +1,14 @@
 {
   "author": "Stephen Niedzielski <stephen@oidoid.com> (https://oidoid.com)",
   "description": "",
-  "dependencies": {
-    "@devvit/public-api": "0.11.2"
-  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@devvit/public-api": "0.11.3-next-2024-11-14-a077c3bb7.0",
     "devvit": "0.11.2",
     "esbuild": "0.24.0",
     "mem-font": "11.0.0-2",
     "typescript": "5.7.1-rc",
-    "vitest": "2.1.4"
+    "vitest": "2.1.5"
   },
   "engines": {
     "node": ">=22.6"

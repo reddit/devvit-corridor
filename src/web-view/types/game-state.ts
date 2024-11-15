@@ -24,7 +24,6 @@ export type GameState = {
   readonly draw: Draw // to-do: when passing around, unpack c2d and such. this has to be undefined in Game anwyay.
   init: boolean
   readonly lvlWH: Readonly<WH> // to-do: level management.
-  msgID: number // to-do: move message proc in here and just accept that I have to cast away?
   outdated: boolean
   readonly p1: P1
   paused: boolean

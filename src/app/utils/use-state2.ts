@@ -10,6 +10,10 @@ import {
 //        meaningfully? need to think about this more and typing needs to be
 //        better. apply to all APIs.
 export function useState2(
+  // biome-ignore lint/suspicious/noConfusingVoidType:
+  init: UseStateInitializer<void | null>
+): UseStateResult<boolean>
+export function useState2(
   init: UseStateInitializer<boolean>
 ): UseStateResult<boolean>
 export function useState2(

@@ -7,8 +7,8 @@
     "composite": true,
 
     // enable type-stripping.
-    "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true,
+    // "allowImportingTsExtensions": true,
+    // "rewriteRelativeImportExtensions": true,
 
     // maximize type checking.
     "allowUnreachableCode": false,

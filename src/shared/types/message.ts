@@ -3,23 +3,7 @@ import type {T2} from './tid.js'
 import type {UUID} from './uuid.js'
 
 /** a window message from the app to the web view. */
-export type AppMessage = {
-  /**
-   * hack: every app render posts a message. the ID allows the web view to
-   * ignore previously sent messages.
-   */
-  id: number
-} & NoIDAppMessage
-
-export type AppMessageQueue = {
-  /** the last queued message ID (message may no longer be in queue). */
-  readonly id: number
-  // hack: useState() doesn't accept readonly arrays.
-  readonly q: Readonly<AppMessage>[]
-}
-
-// hack: Omit<AppMessage, 'id'> was breaking.
-export type NoIDAppMessage =
+export type DevvitMessage =
   | {type: 'Connected'}
   | {type: 'Disconnected'}
   /**
@@ -54,15 +38,7 @@ export type PeerMessage = {
 }
 
 /** a window message from the web view to the app. */
-export type WebViewMessage = {
-  /**
-   * hack: every app render posts a message. the ID allows the web view to
-   * report messages received.
-   */
-  id: number
-} & NoIDWebViewMessage
-
-export type NoIDWebViewMessage =
+export type WebViewMessage =
   | {uuid: UUID; readonly type: 'Init'}
   | {score: number; readonly type: 'GameOver'}
   | {readonly type: 'NewGame'}

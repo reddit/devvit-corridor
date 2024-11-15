@@ -70,7 +70,6 @@ export class Game {
       drawTime: 0 as UTCMillis,
       peers: {},
       time: 0 as UTCMillis,
-      msgID: -1, // initialized to 0 in app.
       outdated: false,
       p1,
       zoo
@@ -143,11 +142,11 @@ export class Game {
   }
 
   #onPause = (): void => {
-    postMessage({type: 'Pause', id: this.#state.msgID})
+    postMessage({type: 'Pause'})
   }
 
   #onResume = (): void => {
-    postMessage({type: 'Resume', id: this.#state.msgID})
+    postMessage({type: 'Resume'})
   }
 
   // to-do: move to message processor.
@@ -160,7 +159,6 @@ export class Game {
       xy: {x: p1.x, y: p1.y}
     }
     postMessage({
-      id: this.#state.msgID,
       msg: {
         peer: true,
         player: {

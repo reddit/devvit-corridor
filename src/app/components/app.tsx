@@ -1,7 +1,6 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit} from '@devvit/public-api'
+import {type Context, Devvit, type JSONValue} from '@devvit/public-api'
 import {
-  type JSONObject,
   type UseIntervalResult,
   useChannel,
   useInterval,
@@ -9,8 +8,7 @@ import {
 } from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime.js'
 import {
-  type AppMessageQueue,
-  type NoIDAppMessage,
+  type DevvitMessage,
   type PeerMessage,
   type WebViewMessage,
   peerSchemaVersion
@@ -25,11 +23,8 @@ import {
 import {utcMillisNow} from '../../shared/types/time.js'
 import type {UUID} from '../../shared/types/uuid.js'
 import {submitNewPost} from '../utils/post.js'
-import {
-  type AppPostRecord,
-  redisGetPost,
-  redisUpdatePost
-} from '../utils/redis.js'
+import {redisGetPost, redisUpdatePost} from '../utils/redis.js'
+import {useState2} from '../utils/use-state2.js'
 
 // to-do: update to fiddlesticks.
 
@@ -50,52 +45,44 @@ export function App(ctx: Devvit.Context): JSX.Element {
   )
   if (!ctx.postId) throw Error('no post ID')
   const postID = T3(ctx.postId) // hack: type post well.
-  const [post, setPost] = useState<AppPostRecord | null>(async () => {
-    const post = await redisGetPost(ctx.redis, postID)
-    return post ?? null
-  })
+  const [post, setPost] = useState2(() => redisGetPost(ctx.redis, postID))
   if (!post) throw Error(`no record for ${postID}`)
 
   const [_company, client, _version] =
     ctx.debug.metadata['devvit-user-agent']?.values[0]?.split(';') ?? []
-  const [msgQueue, setMsgQueue] = useState<AppMessageQueue>({
-    id: 0,
-    q: [
-      {
-        author: {score: post.score, t2: post.t2, username: post.username},
-        completed: post.completed != null,
-        debug,
-        id: 0,
-        p1: {client: client ?? '', name: username, t2, snoovatarURL},
-        type: 'Init'
-      }
-    ]
-  })
-
-  function queueMsg(msg: Readonly<NoIDAppMessage>): void {
-    setMsgQueue(prev => ({
-      id: prev.id + 1,
-      q: [...prev.q, {...msg, id: prev.id + 1}]
-    }))
-  }
-
-  function drainQueue(id: number): void {
-    setMsgQueue(prev => ({id: prev.id, q: prev.q.filter(msg => msg.id > id)}))
-  }
+  useState2(() =>
+    ctx.ui.webView.postMessage<DevvitMessage>('web-view', {
+      author: {score: post.score, t2: post.t2, username: post.username},
+      completed: post.completed != null,
+      debug,
+      p1: {client: client ?? '', name: username, t2, snoovatarURL},
+      type: 'Init'
+    })
+  )
 
   const chan = useChannel<PeerMessage>({
     // key to current post to prevent interfering with other concerts.
     name: postID,
     onMessage: msg => {
       // hack: filter out messages sent by this instance.
-      if (msg.player.uuid !== uuid) queueMsg({msg, type: 'Peer'})
+      if (msg.player.uuid !== uuid)
+        ctx.ui.webView.postMessage<DevvitMessage>('web-view', {
+          msg,
+          type: 'Peer'
+        })
     },
-    onSubscribed: () => queueMsg({type: 'Connected'}),
-    onUnsubscribed: () => queueMsg({type: 'Disconnected'})
+    onSubscribed: () =>
+      ctx.ui.webView.postMessage<DevvitMessage>('web-view', {
+        type: 'Connected'
+      }),
+    onUnsubscribed: () =>
+      ctx.ui.webView.postMessage<DevvitMessage>('web-view', {
+        type: 'Disconnected'
+      })
   })
   if (!post.completed) chan.subscribe()
   else chan.unsubscribe()
-  const fakePeerInterval = useFakePeekInterval(queueMsg)
+  const fakePeerInterval = useFakePeekInterval(ctx)
   if (debugFakePeers && chan.status === ChannelStatus.Connected)
     fakePeerInterval.start()
 
@@ -104,7 +91,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
     // if (debug)
     //   console.log(`${username} app received msg=${JSON.stringify(msg)}`)
-    drainQueue(msg.id)
 
     if (msg.type === 'Peer') msg = msg.msg
 
@@ -150,17 +136,15 @@ export function App(ctx: Devvit.Context): JSX.Element {
   return (
     <webview
       grow
-      onMessage={onMsg as (msg: JSONObject) => Promise<void>}
-      state={msgQueue}
+      id='web-view'
+      onMessage={onMsg as (msg: JSONValue) => Promise<void>}
       url='index.html'
     />
   )
 }
-function useFakePeekInterval(
-  queueMsg: (msg: Readonly<NoIDAppMessage>) => void
-): UseIntervalResult {
+function useFakePeekInterval(ctx: Context): UseIntervalResult {
   return useInterval(() => {
-    queueMsg({
+    ctx.ui.webView.postMessage<DevvitMessage>('web-view', {
       type: 'Peer',
       msg: {
         peer: true,
@@ -183,7 +167,7 @@ function useFakePeekInterval(
         version: peerSchemaVersion
       }
     })
-    queueMsg({
+    ctx.ui.webView.postMessage<DevvitMessage>('web-view', {
       type: 'Peer',
       msg: {
         peer: true,

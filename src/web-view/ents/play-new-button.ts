@@ -46,7 +46,7 @@ export function playNewButtonUpdate(
     ((state.ctrl.isOnStart('A') && btn.hit) || state.ctrl.isOnStart('S'))
   ) {
     btn.pressed = true
-    postMessage({id: state.msgID, type: 'NewGame'})
+    postMessage({type: 'NewGame'})
   }
 }
 
