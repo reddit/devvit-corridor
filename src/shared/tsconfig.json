@@ -9,6 +9,6 @@
     "tsBuildInfoFile": "../../dist/shared/tsconfig.tsbuildinfo"
   },
   // https://github.com/Microsoft/TypeScript/issues/25636
-  "include": ["**/*", "**/*.json", "types/2d.ts"],
+  "include": ["**/*", "**/*.json"],
   "exclude": ["**/*.test.ts"]
 }

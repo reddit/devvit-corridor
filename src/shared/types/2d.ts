@@ -29,11 +29,11 @@ export function xyAdd(lhs: Readonly<XY>, rhs: Readonly<XY>): XY {
 }
 
 /** returns angle between vectors in radians [0, π]. */
-export function xyAngleBetween(v0: Readonly<XY>, v1: Readonly<XY>): number {
-  const mag0 = xyMagnitude(v0)
-  const mag1 = xyMagnitude(v1)
+export function xyAngleBetween(lhs: Readonly<XY>, rhs: Readonly<XY>): number {
+  const mag0 = xyMagnitude(lhs)
+  const mag1 = xyMagnitude(rhs)
   if (!mag0 && !mag1) return 0
-  return Math.acos(clamp(xyDot(v0, v1) / (mag0 * mag1 || 1), -1, 1))
+  return Math.acos(clamp(xyDot(lhs, rhs) / (mag0 * mag1 || 1), -1, 1))
 }
 
 export function xyCloseTo(

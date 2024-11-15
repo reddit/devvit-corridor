@@ -1,4 +1,4 @@
-import {Game} from './game.js'
+import {Game} from './game.ts'
 
 let i = 0
 crypto.randomUUID ??= () => `${i}-${i}-${i}-${i}-${i++}` // hack: HTTP IP usage.

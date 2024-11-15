@@ -36,7 +36,7 @@ export type NoIDAppMessage =
       author: Author
       completed: boolean
       // to-do: rename profile.
-      p1: {client: string; name: string; snoovatarURL: string; t2: T2}
+      p1: {client: string; name: string; snoovatarURL: string; t2: T2} // Profile
       readonly type: 'Init'
     }
   | {msg: PeerMessage; readonly type: 'Peer'}

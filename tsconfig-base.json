@@ -6,6 +6,10 @@
     // enable incremental builds.
     "composite": true,
 
+    // enable type-stripping.
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+
     // maximize type checking.
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

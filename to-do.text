@@ -1,3 +1,9 @@
+need to swap out devvit.yaml for dev build to workaround shared assets.
+add global leaderboard UI.
+style the sub; review settings; lowercase r/fiddlesticks.
+polygonal SAT hitbox detection.
+make launch checklist.
+
 snowball mechanic.
 put border around button.
 tweak shooting sound.

@@ -31,6 +31,8 @@ import {
   redisUpdatePost
 } from '../utils/redis.js'
 
+// to-do: update to fiddlesticks.
+
 export function App(ctx: Devvit.Context): JSX.Element {
   const debug = 'corridor' in ctx.debug
   const debugFakePeers = 'fakepeers' in ctx.debug

@@ -8,6 +8,8 @@
 
     "rootDir": "..",
 
+    "types": ["node"],
+
     "tsBuildInfoFile": "../../dist/test/tsconfig.tsbuildinfo"
   },
   "include": ["**/*", "../**/*.test.ts"],

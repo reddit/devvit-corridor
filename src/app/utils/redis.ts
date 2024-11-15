@@ -31,6 +31,8 @@ export type AppPostRecord = {
   username: string
 }
 
+// to-do: revise to fiddlesticks.
+
 export const redisSchemaVersion: number = 0
 
 const postByCreatedKey: string = 'postByCreated'

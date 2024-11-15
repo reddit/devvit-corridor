@@ -31,7 +31,13 @@
         // devvit buttons do not have a type prop.
         "useButtonType": "off"
       },
-      "style": { "noInferrableTypes": "off", "noNonNullAssertion": "off" },
+      "complexity": { "noThisInStatic": "off" },
+      "style": {
+        "noInferrableTypes": "off",
+        "noNonNullAssertion": "off",
+        "noParameterAssign": "off",
+        "useNumberNamespace": "off"
+      },
       "suspicious": { "noImplicitAnyLet": "off" }
     }
   },

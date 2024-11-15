@@ -3,6 +3,8 @@ import type {Context} from '@devvit/public-api'
 import {Preview} from '../components/preview.js'
 import {redisPutPost} from './redis.js'
 
+// to-do: revise to fiddlesticks implementation.
+
 /** create a new post as the viewer. */
 export async function submitNewPost(ctx: Context): Promise<void> {
   if (!ctx.subredditName) throw Error('no subreddit name')
