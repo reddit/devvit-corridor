@@ -26,19 +26,17 @@ import {Throttle} from './utils/throttle.js'
 // const lvlMag: number = xyMagnitude({x: lvlWH.w, y: lvlWH.h})
 
 export class Game {
-  static async new(): Promise<Game> {
-    console.log(`corridor v0.0.${peerSchemaVersion}`)
-    // don't bother running if the base assets cannot load.
-    const assets = await Assets()
-    const audio = await Audio(assets)
-    return new Game(assets, audio)
+  #looper?: Looper
+  #msgProc: MessageProc
+  #state: Omit<GameState, 'assets' | 'audio' | 'draw'> & {
+    assets: Assets | undefined
+    audio: Audio | undefined
+    draw: Draw | undefined
   }
 
-  #looper: Looper
-  #msgProc: MessageProc
-  #state: Omit<GameState, 'draw'> & {draw: Draw | undefined}
+  constructor() {
+    console.log(`corridor v0.0.${peerSchemaVersion}`)
 
-  private constructor(assets: Assets, audio: Audio) {
     const canvas = Canvas()
 
     const cam = new Cam()
@@ -53,8 +51,8 @@ export class Game {
     const zoo = new Zoo()
 
     this.#state = {
-      assets,
-      audio,
+      assets: undefined,
+      audio: undefined,
       author: {score: null, username: anonUsername, t2: noT2},
       cam,
       canvas,
@@ -75,23 +73,40 @@ export class Game {
       zoo
     }
 
-    zoo.replace(cam, CorridorLevel(this.#state as GameState))
+    this.#msgProc = new MessageProc(this.#state)
 
-    this.#msgProc = new MessageProc(this.#state as GameState)
-    this.#looper = new Looper(assets, canvas, cam, ctrl)
+    initDoc(canvas)
+  }
+
+  async start(): Promise<void> {
+    this.#msgProc.register('add')
+
+    // don't bother running if the base assets cannot load.
+    this.#state.assets = await Assets()
+    this.#state.audio = await Audio(this.#state.assets)
+    document.fonts.add(this.#state.assets.font)
+
+    this.#state.zoo.replace(
+      this.#state.cam,
+      CorridorLevel(this.#state as GameState)
+    )
+    this.#looper = new Looper(
+      this.#state.assets,
+      this.#state.canvas,
+      this.#state.cam,
+      this.#state.ctrl
+    )
     this.#looper.onPause = this.#onPause
     this.#looper.onResume = this.#onResume
 
-    initDoc(assets, canvas)
-  }
-
-  start(): void {
-    this.#msgProc.register('add')
     this.#looper.register('add')
     this.#looper.loop = this.#onLoop
   }
 
   #onLoop = (): void => {
+    // to-do: revise GameState to allow for constructed vs loaded.
+    if (!this.#state.audio || !this.#looper) return
+
     // to-do: this isn't right because I can cruise around town for a long time
     // with A down.
     if (
@@ -200,9 +215,7 @@ function Canvas(): HTMLCanvasElement {
   return canvas
 }
 
-function initDoc(assets: Assets, canvas: HTMLCanvasElement): void {
-  document.fonts.add(assets.font)
-
+function initDoc(canvas: HTMLCanvasElement): void {
   const meta = document.createElement('meta')
   meta.name = 'viewport'
   // don't wait for double-tap scaling on mobile.

@@ -9,9 +9,9 @@ import type {GameState} from './game-state.js'
 
 export class MessageProc {
   /** mutable reference. */
-  readonly state: GameState
+  readonly state: Omit<GameState, 'assets' | 'audio' | 'draw'>
 
-  constructor(state: GameState) {
+  constructor(state: Omit<GameState, 'assets' | 'audio' | 'draw'>) {
     this.state = state
   }
 
