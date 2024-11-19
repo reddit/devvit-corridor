@@ -14,7 +14,7 @@ corridor is a top-down shooter.
 ## features
 
 - well typed realtime messaging. during play, player score is broadcast over network. the original intent was to livestream all game state but it fell out of scope. includes client version and per post filtering.
-- canvas rendering.
+- canvas rendering with proportional scaling; pixel perfectish.
 - web, native Android app, native iOS app client detection (unused).
 - reddit player avatar (snoovatar) querying (unused).
 - basic redis state per post.
